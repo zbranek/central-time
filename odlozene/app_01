@@ -1,0 +1,63 @@
+// najdeme HTML element, kam budeme psát čas
+const timeElement = document.getElementById("time");
+
+// rozdíl mezi serverovým a lokálním časem
+let timeOffset = 0;
+
+/**
+ * Synchronizace času se serverem
+ * - stáhne serverový čas
+ * - spočítá offset
+ */
+async function syncTimeWithServer() {
+  try {
+    // čas těsně před odesláním požadavku
+    const t0 = Date.now();
+
+    const response = await fetch("http://localhost:3000/time");
+    const data = await response.json();
+
+    // čas těsně po přijetí odpovědi
+    const t1 = Date.now();
+
+    // odhad zpoždění (round-trip)
+    const roundTrip = t1 - t0;
+
+    // odhad skutečného času serveru
+    const estimatedServerTime = data.serverTime + roundTrip / 2;
+
+    // výpočet offsetu
+    timeOffset = estimatedServerTime - t1;
+
+  } catch (error) {
+    console.error("❌ Nepodařilo se synchronizovat čas:", error);
+  }
+}
+
+/**
+ * Aktualizace zobrazeného času
+ */
+function updateClockDisplay() {
+  const now = Date.now() + timeOffset;
+  const date = new Date(now);
+
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+
+  timeElement.textContent = `${hours}:${minutes}:${seconds}`;
+}
+
+/**
+ * Spuštění hodin
+ */
+async function startClock() {
+  // nejdřív synchronizujeme čas
+  await syncTimeWithServer();
+
+  // každých 200 ms aktualizujeme displej
+  setInterval(updateClockDisplay, 200);
+}
+
+// start aplikace
+startClock();

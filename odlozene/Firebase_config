@@ -1,0 +1,42 @@
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyD2aA2ZmEQtSeenVI5-0HpKfuTbVptGEOs",
+  authDomain: "timing-app-f640d.firebaseapp.com",
+  databaseURL: "https://timing-app-f640d-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "timing-app-f640d",
+  storageBucket: "timing-app-f640d.firebasestorage.app",
+  messagingSenderId: "918284868665",
+  appId: "1:918284868665:web:8f9659214b148975b481e8",
+  measurementId: "G-LM8Z65PBT8"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+
+
+
+
+//----------------------------------------------------------------------------
+
+
+
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyD2aA2ZmEQtSeenVI5-0HpKfuTbVptGEOs",
+  authDomain: "timing-app-f640d.firebaseapp.com",
+  databaseURL: "https://timing-app-f640d-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "timing-app-f640d",
+  storageBucket: "timing-app-f640d.firebasestorage.app",
+  messagingSenderId: "918284868665",
+  appId: "1:918284868665:web:8f9659214b148975b481e8",
+  measurementId: "G-LM8Z65PBT8"
+};

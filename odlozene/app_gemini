@@ -1,0 +1,251 @@
+/*********************************
+ * 1. GLOBÁLNÍ STAV
+ *********************************/
+let events = JSON.parse(localStorage.getItem('rally_events')) || [];
+let currentStage = parseInt(localStorage.getItem('rally_stage')) || 1;
+let startPlan = null;
+let pendingFinishIndex = null;
+let timeOffset = parseInt(localStorage.getItem('rally_time_offset')) || 0;
+let currentPenalty = "";
+
+// HARDWARE STAV
+let port, reader, lastBeamTrigger = 0;
+const rfidMap = {
+    "a1b2c3d4": "1", // TADY DOPLŇ SVÉ KÓDY
+    "e5f6g7h8": "2"
+};
+
+/*********************************
+ * 2. POMOCNÉ FUNKCE
+ *********************************/
+function formatTime(ms) {
+    const d = new Date(ms);
+    const h = String(d.getHours()).padStart(2, '0');
+    const m = String(d.getMinutes()).padStart(2, '0');
+    const s = String(d.getSeconds()).padStart(2, '0');
+    const msPart = String(Math.floor((d.getMilliseconds() / 10))).padStart(2, '0');
+    return `${h}:${m}:${s}.${msPart}`;
+}
+
+function getNextAllowedStartTime(now, intervalSec) {
+    const intervalMs = intervalSec * 1000;
+    return Math.ceil(now / intervalMs) * intervalMs;
+}
+
+function updateRole(newRole) {
+    localStorage.setItem('rally_role', newRole);
+}
+
+/*********************************
+ * 3. HODINY A KOREKCE
+ *********************************/
+function updateClock() {
+    const now = Date.now() + timeOffset;
+    const clockEl = document.getElementById('central-clock');
+    if (clockEl) clockEl.textContent = formatTime(now).split('.')[0];
+    checkAutoStart(now);
+}
+setInterval(updateClock, 100);
+
+function adjustOffset(ms) {
+    timeOffset += ms;
+    localStorage.setItem('rally_time_offset', timeOffset);
+    updateOffsetDisplay();
+}
+
+function updateOffsetDisplay() {
+    const el = document.getElementById('current-offset-display');
+    if (el) {
+        const seconds = (timeOffset / 1000).toFixed(1);
+        el.textContent = (timeOffset > 0 ? "+" : "") + seconds + "s";
+    }
+}
+
+/*********************************
+ * 4. LOGIKA STARTU
+ *********************************/
+function updateBigRiderDisplay(val) {
+    const el = document.getElementById('active-rider-display');
+    if (el) el.textContent = val && val.length > 0 ? val : "--";
+}
+
+function onRiderNumberChange() {
+    const riderNum = document.getElementById('riderNumber').value;
+    const interval = 60; // Výchozí 60s
+    updateBigRiderDisplay(riderNum);
+    if (riderNum.length > 0) {
+        const now = Date.now() + timeOffset;
+        startPlan = {
+            nextTime: getNextAllowedStartTime(now, interval),
+            rider: riderNum,
+            active: true,
+            triggered: false
+        };
+    } else { cancelStart(); }
+}
+
+function checkAutoStart(now) {
+    if (!startPlan || !startPlan.active) return;
+    const diff = startPlan.nextTime - now;
+    const countdownEl = document.getElementById('countdown');
+    if (diff <= 10000 && diff > 0) {
+        countdownEl.textContent = Math.ceil(diff / 1000);
+        countdownEl.classList.remove('go');
+    } else if (diff <= 0 && diff > -1500) {
+        if (!startPlan.triggered) {
+            recordEvent("START", startPlan.rider, startPlan.nextTime);
+            startPlan.triggered = true;
+            countdownEl.textContent = "GO!";
+            countdownEl.classList.add('go');
+        }
+    } else if (diff <= -1500) { clearNum('riderNumber'); }
+}
+
+function cancelStart() {
+    startPlan = null;
+    updateBigRiderDisplay("");
+    if (document.getElementById('countdown')) document.getElementById('countdown').textContent = "--";
+}
+
+/*********************************
+ * 5. LOGIKA CÍLE
+ *********************************/
+document.getElementById('finishBtn').onclick = function() {
+    triggerFinishTime(Date.now() + timeOffset);
+};
+
+function triggerFinishTime(time) {
+    const index = recordEvent("FINISH", "?", time);
+    pendingFinishIndex = index;
+    document.getElementById('finishModal').classList.remove('hidden');
+    document.getElementById('finishRiderInput').value = "";
+}
+
+function confirmFinishRider() {
+    const riderNum = document.getElementById('finishRiderInput').value;
+    if (riderNum && pendingFinishIndex !== null) {
+        events[pendingFinishIndex].rider = riderNum;
+        saveAndRender();
+        document.getElementById('finishModal').classList.add('hidden');
+        pendingFinishIndex = null;
+    }
+}
+
+/*********************************
+ * 6. HARDWARE INTEGRACE (ARDUINO)
+ *********************************/
+async function connectArduino() {
+    try {
+        port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 115200 });
+        
+        // Vytvoříme stream pro čtení textu
+        const textDecoder = new TextDecoderStream();
+        const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+        reader = textDecoder.readable.getReader();
+
+        console.log("Hardware úspěšně připojen na COM portu.");
+        alert("Hardware připojen!");
+        readLoop();
+    } catch (err) {
+        console.error("Chyba při připojování k Arduinu:", err);
+        alert("Nepodařilo se připojit. Podrobnosti v konzoli (F12).");
+    }
+}
+
+async function readLoop() {
+    let buffer = "";
+    while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += value;
+        if (buffer.includes("\n")) {
+            let lines = buffer.split("\n");
+            buffer = lines.pop();
+            for (let line of lines) {
+                try {
+                    const data = JSON.parse(line.trim());
+                    handleHardwareEvent(data);
+                } catch (e) {}
+            }
+        }
+    }
+}
+
+function handleHardwareEvent(data) {
+    const role = localStorage.getItem('rally_role');
+    const now = Date.now() + timeOffset;
+
+    if (data.type === "BEAM" && data.state === 0) {
+        if (now - lastBeamTrigger < 2000) return;
+        lastBeamTrigger = now;
+        if (role === "FINISH") triggerFinishTime(now);
+    }
+
+    if (data.type === "RFID") {
+        const mappedRider = rfidMap[data.uid] || data.uid;
+        if (role === "START") {
+            document.getElementById('riderNumber').value = mappedRider;
+            onRiderNumberChange();
+        } else if (role === "FINISH" && !document.getElementById('finishModal').classList.contains('hidden')) {
+            document.getElementById('finishRiderInput').value = mappedRider;
+            confirmFinishRider();
+        }
+    }
+}
+
+/*********************************
+ * 7. DATA A UI
+ *********************************/
+function recordEvent(type, rider, time) {
+    const event = { stage: currentStage, type: type, rider: rider, time: time };
+    events.push(event);
+    saveAndRender();
+    return events.length - 1;
+}
+
+function saveAndRender() {
+    localStorage.setItem('rally_events', JSON.stringify(events));
+    localStorage.setItem('rally_stage', currentStage);
+    renderLog();
+}
+
+function renderLog() {
+    const logEl = document.getElementById('log');
+    if (!logEl) return;
+    logEl.innerHTML = events.slice().reverse().map((e, i) => `
+        <div style="border-bottom: 1px solid #333; padding: 10px 0;">
+            RZ${e.stage} | <strong>${e.type}</strong> | #${e.rider} | ${formatTime(e.time)}
+        </div>
+    `).join('');
+}
+
+function pressNum(num, targetId = 'riderNumber') {
+    document.getElementById(targetId).value += num;
+    if (targetId === 'riderNumber') onRiderNumberChange();
+}
+
+function clearNum(targetId = 'riderNumber') {
+    document.getElementById(targetId).value = "";
+    if (targetId === 'riderNumber') cancelStart();
+}
+
+function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + id).classList.add('active');
+}
+
+function changeStage(delta) {
+    currentStage = Math.max(1, currentStage + delta);
+    document.getElementById('current-stage-num').textContent = currentStage;
+    document.getElementById('setup-stage-num').textContent = currentStage;
+    saveAndRender();
+}
+
+// Inicializace
+document.addEventListener("DOMContentLoaded", () => {
+    const savedRole = localStorage.getItem('rally_role');
+    if (savedRole) document.getElementById('device-role-select').value = savedRole;
+    document.getElementById('current-stage-num').textContent = currentStage;
+    renderLog();
+});

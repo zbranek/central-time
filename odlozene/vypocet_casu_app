@@ -1,0 +1,19 @@
+function calculateLastStageTime(riderNumber) {
+  const riderEvents = events
+    .filter(e => e.rider === riderNumber)
+    .sort((a, b) => a.time - b.time);
+
+  let lastStart = null;
+
+  for (const e of riderEvents) {
+    if (e.type === "START") {
+      lastStart = e;
+    }
+
+    if (e.type === "CÍL" && lastStart) {
+      return e.time - lastStart.time;
+    }
+  }
+
+  return null;
+}

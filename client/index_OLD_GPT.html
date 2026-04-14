@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <title>Centrální čas závodu</title>
+
+  <!-- Základní styl, aby byl čas dobře čitelný -->
+<style>
+
+.countdown {
+  font-size: 4rem;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.countdown.go {
+  color: green;
+}
+
+#keypad {
+  max-width: 220px;
+  margin-top: 10px;
+}
+
+#keypad .row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+#keypad button {
+  flex: 1;
+  padding: 14px;
+  font-size: 20px;
+  border-radius: 6px;
+}
+
+
+.indicator {
+  font-weight: bold;
+  color: red;
+  text-align: center;
+  margin: 8px 0;
+  font-size: 18px;
+  animation: blink 1s infinite;
+}
+
+.hidden {
+  display: none;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+
+  body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #111;
+    color: #00ff00;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  #container {
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+
+  .modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+
+  #time {
+    font-size: 3rem;
+    margin-bottom: 20px;
+  }
+
+  #controls {
+    margin-bottom: 20px;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  button {
+    flex: 1;
+    padding: 10px;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+
+  #log {
+    font-size: 0.9rem;
+    text-align: left;
+    max-height: 200px;
+    overflow-y: auto;
+    border-top: 1px solid #333;
+    padding-top: 10px;
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+</style>
+
+</head>
+<body>
+
+
+
+<!-- start sekce -->
+<section id="view-start" class="view active">
+
+  <h2>START RZ</h2>
+
+  <div id="central-time"></div>
+
+
+  <button id="startAutoBtn">Spustit starty</button>
+  <button id="stopAutoBtn">Zastavit</button>
+
+  <div id="countdown" class="countdown"></div>
+
+
+  <div id="auto-indicator" class="blinking">
+    START AUTOMAT AKTIVNÍ
+  </div>
+
+  <div class="start-settings">
+    <label>Start prvního jezdce</label>
+    <input type="time" id="firstStartTime" step="1">
+
+    <label>Interval</label>
+    <select id="startInterval">
+      <option value="30">30 s</option>
+      <option value="60">60 s</option>
+      <option value="120">120 s</option>
+    </select>
+  </div>
+
+  <div class="rider-input">
+    <input id="riderNumberInput" readonly>
+  </div>
+
+  <div id="numeric-keyboard"></div>
+
+       <nav>
+  <button data-view="start">START</button>
+  <button data-view="finish">CÍL</button>
+  <button data-view="setup">PŘÍPRAVA</button>
+</nav>
+
+      <div id="keypad">
+  <div class="row">
+    <button data-num="1">1</button>
+    <button data-num="2">2</button>
+    <button data-num="3">3</button>
+  </div>
+  <div class="row">
+    <button data-num="4">4</button>
+    <button data-num="5">5</button>
+    <button data-num="6">6</button>
+  </div>
+  <div class="row">
+    <button data-num="7">7</button>
+    <button data-num="8">8</button>
+    <button data-num="9">9</button>
+  </div>
+  <div class="row">
+    <button data-num="0">0</button>
+    <button id="clearBtn">CLEAR</button>
+  </div>
+</div>
+
+     <h3>Rychlostní zkouška</h3>
+      <button id="prevStage">◀ RZ</button>
+      <span id="stageDisplay">RZ 1</span>
+      <button id="nextStage">RZ ▶</button>
+
+
+      <div class="buttons">
+        <button id="startBtn">START</button>
+        <button id="exportCsv">Export logu (CSV)</button>
+
+      </div>
+    </div>
+
+
+</section>
+<!-- start sekce -->
+
+<!-- sekce finish   -->
+
+<section id="view-finish" class="view"></section>
+
+<section id="view-finish" class="view">
+
+  <h2>CÍL RZ</h2>
+
+  <div id="central-time-finish"></div>
+
+  <button id="finishButton">
+    CÍL
+  </button>
+
+  <div id="finish-popup" class="hidden">
+    <h3>Zadej číslo jezdce</h3>
+    <input id="finishRiderInput" readonly>
+    <div id="finish-keyboard"></div>
+    <button id="confirmFinish">OK</button>
+  </div>
+
+     <nav>
+  <button data-view="start">START</button>
+  <button data-view="finish">CÍL</button>
+  <button data-view="setup">PŘÍPRAVA</button>
+</nav>
+
+      <div id="keypad">
+  <div class="row">
+    <button data-num="1">1</button>
+    <button data-num="2">2</button>
+    <button data-num="3">3</button>
+  </div>
+  <div class="row">
+    <button data-num="4">4</button>
+    <button data-num="5">5</button>
+    <button data-num="6">6</button>
+  </div>
+  <div class="row">
+    <button data-num="7">7</button>
+    <button data-num="8">8</button>
+    <button data-num="9">9</button>
+  </div>
+  <div class="row">
+    <button data-num="0">0</button>
+    <button id="clearBtn">CLEAR</button>
+  </div>
+</div>
+
+     <h3>Rychlostní zkouška</h3>
+      <button id="prevStage">◀ RZ</button>
+      <span id="stageDisplay">RZ 1</span>
+      <button id="nextStage">RZ ▶</button>
+
+
+      <div class="buttons">
+        <button id="finishBtn">CÍL</button>
+        <button id="exportCsv">Export logu (CSV)</button>
+
+      </div>
+    </div>
+
+
+</section>
+
+<!-- sekce finish   -->
+
+<!-- sekce setup  -->
+
+<section id="view-setup" class="view"></section>
+
+<section id="view-setup" class="view">
+
+  <h2>PŘÍPRAVA ZÁVODU</h2>
+
+  <label>Počet RZ</label>
+  <input type="number" id="rzCount" min="1">
+
+  <button id="saveSetup">
+    Uložit nastavení
+  </button>
+
+     <nav>
+  <button data-view="start">START</button>
+  <button data-view="finish">CÍL</button>
+  <button data-view="setup">PŘÍPRAVA</button>
+</nav>
+
+</section>
+
+<!-- sekce setup end -->
+
+    <div id="container">
+    <div id="time">--:--:--</div>
+
+    <div id="controls">
+      <input
+        type="number"
+        id="riderNumber"
+        placeholder="Číslo závodníka"
+      />
+
+
+
+
+
+<div id="finishModal" class="modal hidden">
+  <div class="modal-content">
+    <h2>🏁 CÍL</h2>
+    <p>Zadej číslo závodníka</p>
+
+    <input id="finishRiderInput" readonly />
+
+    <div id="finishKeypad">
+      <!-- znovupoužijeme stejná data-num -->
+      <button data-num="1">1</button>
+      <button data-num="2">2</button>
+      <button data-num="3">3</button>
+      <button data-num="4">4</button>
+      <button data-num="5">5</button>
+      <button data-num="6">6</button>
+      <button data-num="7">7</button>
+      <button data-num="8">8</button>
+      <button data-num="9">9</button>
+      <button data-num="0">0</button>
+      <button id="finishClear">Clear</button>
+    </div>
+
+    <button id="finishConfirm">OK</button>
+  </div>
+</div>
+
+
+ 
+
+
+
+   
+
+    <div id="log"></div>
+    <h3>Výsledky</h3>
+    <div id="results"></div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

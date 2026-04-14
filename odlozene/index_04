@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <title>Centrální čas závodu</title>
+
+  <!-- Základní styl, aby byl čas dobře čitelný -->
+<style>
+
+.countdown {
+  font-size: 4rem;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.countdown.go {
+  color: green;
+}
+
+#keypad {
+  max-width: 220px;
+  margin-top: 10px;
+}
+
+#keypad .row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+#keypad button {
+  flex: 1;
+  padding: 14px;
+  font-size: 20px;
+  border-radius: 6px;
+}
+
+
+.indicator {
+  font-weight: bold;
+  color: red;
+  text-align: center;
+  margin: 8px 0;
+  font-size: 18px;
+  animation: blink 1s infinite;
+}
+
+.hidden {
+  display: none;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+
+  body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #111;
+    color: #00ff00;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  #container {
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+
+  #time {
+    font-size: 3rem;
+    margin-bottom: 20px;
+  }
+
+  #controls {
+    margin-bottom: 20px;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  button {
+    flex: 1;
+    padding: 15px;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+
+  #log {
+    font-size: 0.9rem;
+    text-align: left;
+    max-height: 200px;
+    overflow-y: auto;
+    border-top: 1px solid #333;
+    padding-top: 10px;
+  }
+</style>
+
+</head>
+<body>
+
+  <section class="start-control">
+  <h3>Start RZ</h3>
+
+  <label>
+    Start prvního jezdce:
+    <input type="time" id="firstStartTime" step="1">
+  </label>
+
+  <div id="autoStartIndicator" class="indicator hidden">
+  🔴 AUTO START
+</div>
+
+
+  <label>
+    Interval:
+    <select id="startInterval">
+      <option value="30">30 s</option>
+      <option value="60">60 s</option>
+      <option value="120">120 s</option>
+    </select>
+  </label>
+
+  <button id="startAutoBtn">Spustit starty</button>
+  <button id="stopAutoBtn">Zastavit</button>
+
+  <div id="countdown" class="countdown"></div>
+</section>
+
+
+
+  <div id="container">
+    <div id="time">--:--:--</div>
+
+    <div id="controls">
+      <input
+        type="number"
+        id="riderNumber"
+        placeholder="Číslo závodníka"
+      />
+
+      <div id="keypad">
+  <div class="row">
+    <button data-num="1">1</button>
+    <button data-num="2">2</button>
+    <button data-num="3">3</button>
+  </div>
+  <div class="row">
+    <button data-num="4">4</button>
+    <button data-num="5">5</button>
+    <button data-num="6">6</button>
+  </div>
+  <div class="row">
+    <button data-num="7">7</button>
+    <button data-num="8">8</button>
+    <button data-num="9">9</button>
+  </div>
+  <div class="row">
+    <button data-num="0">0</button>
+    <button id="clearBtn">CLEAR</button>
+  </div>
+</div>
+
+
+      <h3>Rychlostní zkouška</h3>
+      <button id="prevStage">◀ RZ</button>
+      <span id="stageDisplay">RZ 1</span>
+      <button id="nextStage">RZ ▶</button>
+
+
+
+      <div class="buttons">
+        <button id="startBtn">START</button>
+        <button id="finishBtn">CÍL</button>
+        <button id="reset">Reset závodu</button>
+        <button id="exportCsv">Export logu (CSV)</button>
+
+      </div>
+    </div>
+
+    <div id="log"></div>
+    <h3>Výsledky</h3>
+    <div id="results"></div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,430 @@
+
+
+// ===== LOKALNI DATA =====
+
+const STORAGE_KEYS = {
+  EVENTS: "rally_events",
+  LOG: "rally_log", 
+  STAGE: "rally_current_stage"
+};
+
+function saveEvents() {
+  localStorage.setItem(
+    STORAGE_KEYS.EVENTS,
+    JSON.stringify(events)
+  );
+}
+
+function saveLog() {
+  localStorage.setItem(
+    STORAGE_KEYS.LOG,
+    logElement.innerHTML
+  );
+}
+
+function saveStage() {
+  localStorage.setItem(
+    STORAGE_KEYS.STAGE,
+    currentStage
+  );
+}
+
+function loadStage() {
+  const storedStage = localStorage.getItem(STORAGE_KEYS.STAGE);
+  if (storedStage) {
+    currentStage = Number(storedStage);
+  }
+  updateStageDisplay();
+}
+
+
+function loadFromStorage() {
+  const storedEvents = localStorage.getItem(STORAGE_KEYS.EVENTS);
+  const storedLog = localStorage.getItem(STORAGE_KEYS.LOG);
+
+  if (storedEvents) {
+    events = JSON.parse(storedEvents);
+  }
+
+  if (storedLog) {
+    logElement.innerHTML = storedLog;
+  }
+
+  renderResults();
+}
+
+
+
+
+
+// ===== CENTRÁLNÍ ČAS =====
+
+const timeElement = document.getElementById("time");
+let timeOffset = 0;
+
+function getCentralTime() {
+  return Date.now() + timeOffset;
+}
+
+function updateClockDisplay() {
+  const date = new Date(getCentralTime());
+
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  const ss = String(date.getSeconds()).padStart(2, "0");
+
+  timeElement.textContent = `${hh}:${mm}:${ss}`;
+}
+
+// ===== SYNCHRONIZACE (NEBLOKUJE APLIKACI) =====
+
+async function syncTimeWithServer() {
+  try {
+    const t0 = Date.now();
+
+    const response = await fetch("http://localhost:3000/time");
+    const data = await response.json();
+
+    const t1 = Date.now();
+    const roundTrip = t1 - t0;
+
+    const estimatedServerTime = data.serverTime + roundTrip / 2;
+    timeOffset = estimatedServerTime - t1;
+
+    console.log("⏱ Čas synchronizován");
+
+  } catch (err) {
+    console.warn("⚠️ Synchronizace času selhala – běžím lokálně");
+  }
+}
+
+// ===== MĚŘENÍ =====
+
+const riderInput = document.getElementById("riderNumber");
+const startBtn = document.getElementById("startBtn");
+const finishBtn = document.getElementById("finishBtn");
+const logElement = document.getElementById("log");
+
+let events = [];
+let currentStage = 1;
+
+function addEvent(type) {
+  const riderNumber = riderInput.value;
+
+  if (!riderNumber) {
+    alert("Zadej číslo závodníka!");
+    return;
+  }
+
+const event = {
+  rider: riderNumber,
+  stage: currentStage,
+  type,
+  time: getCentralTime(),
+  valid: true
+};
+
+  events.push(event);
+  renderLog();
+
+    const stageTime = calculateLastStageTime(riderNumber);
+
+  if (stageTime !== null) {
+    const seconds = Math.floor(stageTime / 1000);
+    const min = Math.floor(seconds / 60);
+    const sec = seconds % 60;
+
+    alert(
+      `Závodník #${riderNumber}\n` +
+      `Čas RZ: ${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`
+    );
+  }
+
+renderResults();
+
+saveEvents();
+saveLog();
+
+
+
+
+}
+
+const resultsElement = document.getElementById("results");
+
+function formatStageTime(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const min = Math.floor(totalSeconds / 60);
+  const sec = totalSeconds % 60;
+  return `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+}
+
+function getUniqueRiders() {
+  return [...new Set(events.map(e => e.rider))];
+}
+
+function calculateResults() {
+  const results = [];
+
+  getUniqueRiders().forEach(rider => {
+    const totalTime = calculateTotalTime(rider);
+    if (totalTime > 0) {
+      results.push({ rider, totalTime });
+    }
+  });
+
+  results.sort((a, b) => a.totalTime - b.totalTime);
+  return results;
+}
+
+
+function renderResults() {
+  const results = calculateResults();
+
+  if (results.length === 0) {
+    resultsElement.textContent = "Zatím žádné výsledky";
+    return;
+  }
+
+  resultsElement.innerHTML = "";
+
+  results.forEach((r, index) => {
+    const div = document.createElement("div");
+    div.textContent =
+      `${index + 1}. #${r.rider} – ${formatStageTime(r.totalTime)}`;
+    resultsElement.appendChild(div);
+  });
+}
+
+//============== editace LOG==============
+
+function editEvent(index) {
+  const e = events[index];
+
+  const newRider = prompt(
+    "Číslo závodníka:",
+    e.rider
+  );
+  if (newRider === null) return;
+
+  const newStage = prompt(
+    "RZ číslo:",
+    e.stage
+  );
+  if (newStage === null) return;
+
+  // validace
+  const stageNumber = Number(newStage);
+  if (!Number.isInteger(stageNumber) || stageNumber < 1) {
+    alert("Neplatné číslo RZ");
+    return;
+  }
+
+  e.rider = newRider.trim();
+  e.stage = stageNumber;
+
+  saveEvents();
+  renderLog();
+  renderResults();
+}
+
+
+
+function renderLog() {
+  logElement.innerHTML = "";
+
+  events
+    .sort((a, b) => a.time - b.time)
+    .forEach((e, index) => {
+      const timeStr = new Date(e.time).toLocaleTimeString();
+      const div = document.createElement("div");
+
+      div.addEventListener("click", () => {
+  editEvent(index);
+});
+
+
+
+      div.textContent =
+        `RZ${e.stage} | ` +
+        `${String(index + 1).padStart(2, "0")} | ` +
+        `#${e.rider} | ` +
+        `${e.type} | ` +
+        `${timeStr}` +
+        (e.valid ? "" : " ❌ NEPLATNÝ");
+
+      if (!e.valid) {
+        div.style.opacity = "0.5";
+      }
+
+      logElement.appendChild(div);
+    });
+}
+
+function toggleEventValidity(index) {
+  if (!confirm("Označit tento záznam jako neplatný / platný?")) return;
+
+  events[index].valid = !events[index].valid;
+
+  saveEvents();
+  renderLog();
+  renderResults();
+}
+
+
+//============Export CSV
+
+function generateCSV() {
+  const header = [
+  "RZ",
+  "Pořadí",
+  "Závodník",
+  "Typ",
+  "Čas",
+  "Timestamp",
+  "Platný"
+];
+
+
+  const rows = events
+    .sort((a, b) => a.time - b.time)
+    .map((e, index) => {
+      const timeStr = new Date(e.time).toLocaleTimeString();
+
+      return [
+        `RZ${e.stage}`,
+        index + 1,
+        e.rider,
+        e.type,
+        timeStr,
+        e.time
+      ].join(";");
+    });
+
+  return [header.join(";"), ...rows].join("\n");
+}
+
+function downloadCSV() {
+  const csvContent = generateCSV();
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "rally_log.csv";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+
+
+function calculateLastStageTime(riderNumber) {
+  const riderEvents = events
+    .filter(e => e.valid && e.rider === riderNumber)
+    .sort((a, b) => a.time - b.time);
+
+  const start = events.find(
+   e => e.valid && e.rider === rider && e.stage === stage && e.type === "START"
+      );
+  const finish = events.find(
+  e => e.valid && e.rider === rider && e.stage === stage && e.type === "FINISH"
+      );
+
+
+  let lastStart = null;
+
+  for (const e of riderEvents) {
+    if (e.type === "START") {
+      lastStart = e;
+    }
+
+    if (e.type === "FINISH" && lastStart) {
+      return e.time - lastStart.time;
+    }
+  }
+
+  return null;
+}
+
+//=============Stage time
+
+function calculateStageTime(rider, stage) {
+  const start = events.find(
+    e => e.rider === rider && e.stage === stage && e.type === "START"
+  );
+  const finish = events.find(
+    e => e.rider === rider && e.stage === stage && e.type === "FINISH"
+  );
+
+  if (!start || !finish) return null;
+  return finish.time - start.time;
+}
+
+// ==============Total Time
+function calculateTotalTime(rider) {
+  let total = 0;
+
+  for (let stage = 1; stage <= currentStage; stage++) {
+    const t = calculateStageTime(rider, stage);
+    if (t !== null) total += t;
+  }
+
+  return total;
+}
+
+
+//=====Reset vysledku====
+
+document.getElementById("reset").addEventListener("click", () => {
+  if (!confirm("Opravdu smazat všechna data?")) return;
+
+  events = [];
+  logElement.innerHTML = "";
+  resultsElement.innerHTML = "";
+
+  localStorage.clear();
+});
+
+// ====ovladani RZ=====
+
+const stageDisplay = document.getElementById("stageDisplay");
+
+function updateStageDisplay() {
+  stageDisplay.textContent = `RZ ${currentStage}`;
+}
+
+document.getElementById("nextStage").addEventListener("click", () => {
+  currentStage++;
+  updateStageDisplay();
+  saveStage();
+});
+
+document.getElementById("prevStage").addEventListener("click", () => {
+  if (currentStage > 1) {
+    currentStage--;
+    updateStageDisplay();
+    saveStage();
+  }
+});
+
+startBtn.addEventListener("click", () => addEvent("START"));
+finishBtn.addEventListener("click", () => addEvent("FINISH"));
+
+// ===== START APLIKACE =====
+
+// hodiny běží VŽDY
+updateClockDisplay();
+setInterval(updateClockDisplay, 200);
+
+// synchronizace běží NA POZADÍ
+syncTimeWithServer();
+
+loadStage();
+loadFromStorage();
+
+document
+  .getElementById("exportCsv")
+  .addEventListener("click", downloadCSV);
+
+

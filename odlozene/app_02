@@ -1,0 +1,88 @@
+// ===== CENTRÁLNÍ ČAS =====
+
+const timeElement = document.getElementById("time");
+let timeOffset = 0;
+
+async function syncTimeWithServer() {
+  const t0 = Date.now();
+  const response = await fetch("http://localhost:3000/time");
+  const data = await response.json();
+  const t1 = Date.now();
+
+  const roundTrip = t1 - t0;
+  const estimatedServerTime = data.serverTime + roundTrip / 2;
+  timeOffset = estimatedServerTime - t1;
+}
+
+function getCentralTime() {
+  return Date.now() + timeOffset;
+}
+
+function updateClockDisplay() {
+  const date = new Date(getCentralTime());
+
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  const ss = String(date.getSeconds()).padStart(2, "0");
+
+  timeElement.textContent = `${hh}:${mm}:${ss}`;
+}
+
+// ===== MĚŘENÍ =====
+
+const riderInput = document.getElementById("riderNumber");
+const startBtn = document.getElementById("startBtn");
+const finishBtn = document.getElementById("finishBtn");
+const logElement = document.getElementById("log");
+
+const events = [];
+
+function addEvent(type) {
+  const riderNumber = riderInput.value;
+
+  if (!riderNumber) {
+    alert("Zadej číslo závodníka!");
+    return;
+  }
+
+  const event = {
+    rider: riderNumber,
+    type: type,
+    time: getCentralTime()
+  };
+
+  events.push(event);
+  renderLog();
+}
+
+function renderLog() {
+  logElement.innerHTML = "";
+
+  events.forEach((e, index) => {
+    const date = new Date(e.time);
+    const timeStr = date.toLocaleTimeString();
+
+    const div = document.createElement("div");
+    div.textContent = `${index + 1}. #${e.rider} – ${e.type} – ${timeStr}`;
+
+    logElement.appendChild(div);
+  });
+}
+
+startBtn.addEventListener("click", () => addEvent("START"));
+finishBtn.addEventListener("click", () => addEvent("CÍL"));
+
+// ===== START APLIKACE =====
+
+async function startApp() {
+  await syncTimeWithServer();
+
+  // první okamžité vykreslení
+  updateClockDisplay();
+
+  // pravidelná aktualizace
+  setInterval(updateClockDisplay, 200);
+}
+
+startApp();
+
