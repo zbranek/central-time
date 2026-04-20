@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Rally Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Styl podobný timing app -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #0f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #000;
+      padding: 10px;
+      display: flex;
+      justify-content: space-around;
+      border-bottom: 2px solid #333;
+    }
+
+    .tab-btn {
+      background: #222;
+      border: none;
+      color: #0f0;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .tab-btn.active {
+      background: #004400;
+    }
+
+    .view {
+      display: none;
+      padding: 15px;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      background: #000;
+      border: 1px solid #333;
+      color: #0f0;
+    }
+
+    button {
+      padding: 8px 12px;
+      margin: 5px 0;
+      background: #003366;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    td, th {
+      border: 1px solid #333;
+      padding: 6px;
+      text-align: left;
+    }
+
+    th {
+      background: #222;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <button class="tab-btn active" onclick="showView('admin')">ADMINISTRACE</button>
+  <button class="tab-btn" onclick="showView('itinerary')">ITINERÁŘ</button>
+  <button class="tab-btn" onclick="showView('results')">VÝSLEDKY</button>
+  <input id="race-id-input" placeholder="ID závodu (5 číslic)">
+<button onclick="saveRaceId()">Uložit</button>
+</header>
+
+<!-- ================= ADMINISTRACE ================= -->
+<div id="view-admin" class="view active">
+
+  <h2>Startovní listina</h2>
+
+  <input id="rider-number" placeholder="Číslo jezdce">
+  <input id="rider-name" placeholder="Jméno a příjmení">
+  <input id="co-driver" placeholder="Spolujezdec">
+  <input id="nationality" placeholder="Národnost">
+  <input id="car-brand" placeholder="Značka">
+  <input id="car-model" placeholder="Model">
+  <input id="category" placeholder="Kategorie">
+
+  <button onclick="addRider()">➕ Přidat jezdce</button>
+
+  <table id="riders-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Jméno</th>
+        <th>Spolujezdec</th>
+        <th>Auto</th>
+        <th>Kategorie</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+</div>
+
+<!-- ================= ITINERÁŘ ================= -->
+<div id="view-itinerary" class="view">
+
+  <h2>Itinerář</h2>
+
+  <select id="it-type">
+    <option value="stage">RZ</option>
+    <option value="service">Servis</option>
+    <option value="transfer">Přejezd</option>
+  </select>
+
+  <input id="it-label" placeholder="Popis (např. RZ1 START)">
+  <input id="it-time" type="datetime-local">
+
+  <button onclick="addItinerary()">➕ Přidat bod</button>
+
+  <table id="itinerary-table">
+    <thead>
+      <tr>
+        <th>Typ</th>
+        <th>Popis</th>
+        <th>Čas</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+</div>
+
+<!-- ================= VÝSLEDKY ================= -->
+<div id="view-results" class="view">
+
+  <h2>Výsledky</h2>
+
+  <button onclick="loadResults()">🔄 Načíst výsledky</button>
+
+  <table id="results-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Jezdec</th>
+        <th>RZ</th>
+        <th>Čas</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<script src="../js/supabase.js"></script>
+<script src="../js/admin.js"></script>
+
+</body>
+</html>
