@@ -256,11 +256,13 @@ function confirmFinishRider() {
 
 function recordEvent(type, rider, time) {
     const event = {
+        id: crypto.randomUUID(),   // 🆕 unikátní ID
         stage: currentStage,
         type: type,
         rider: rider,
         time: time
     };
+
     events.push(event);
     saveAndRender();
     return events.length - 1;
@@ -608,26 +610,25 @@ async function uploadLogsToFirebase() {
   try {
     // Připrav řádky pro Supabase - každý event = jeden řádek
 const rows = events.map(e => ({
-    race_id:     currentRaceId || "00000",
-    stage:       e.stage,
-    type:        e.type,
-    rider:       e.rider || "",
-    cas:         formatTime(e.time),
-    time_ms:     e.time,
-    role:        role,
-    penalty:     e.penalty || "",
-    uploaded_at: Date.now()
+    event_id: e.id,   // 🆕 důležité
+    race_id: currentRaceId || "00000",
+    stage: e.stage,
+    type: e.type,
+    rider: e.rider || "",
+    cas: formatTime(e.time),
+    time_ms: e.time,
+    role: role,
+    penalty: e.penalty || "",
+    uploaded_at: new Date().toISOString()
 }));
 
 await supabaseClient
-    .from("rally_logs")
-    .delete()
-    .eq("race_id", currentRaceId || "00000")
-    .eq("role", role);
+  .from("rally_logs")
+  .upsert(rows, { onConflict: "event_id" });
 
 const { error } = await supabaseClient
     .from("rally_logs")
-    .insert(rows);
+    .upsert(rows, { onConflict: "event_id" });
 
 if (error) throw error;
 
