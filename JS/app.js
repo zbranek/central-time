@@ -303,7 +303,7 @@ function renderLog() {
         <span style="color: #0f0; opacity: 0.7;">RZ${e.stage}</span> | 
         <strong>${e.type}</strong> | 
         <span style="color:yellow; font-weight:bold;">#${e.rider}</span> | 
-        ${formatTime(e.time)}
+        ${formatTime(e.time)} ${e.penalty ? " | ⚠ " + e.penalty : ""}
     </div>
     <button onclick="deleteEvent(${actualIndex})" style="background:none; border:1px solid #600; color:#f00; padding:2px 8px; font-size:0.8rem; border-radius: 4px;">SMAZAT</button>
 `;
@@ -338,11 +338,20 @@ function confirmClearData() {
 
 // Funkce pro opravu čísla jezdce
 function editEventRider(index) {
-    const newRider = prompt("Opravit číslo jezdce:", events[index].rider);
-    if (newRider !== null) {
-        events[index].rider = newRider;
-        saveAndRender();
-    }
+    const event = events[index];
+
+    // 1️⃣ číslo jezdce
+    const newRider = prompt("Číslo jezdce:", event.rider);
+    if (newRider === null) return;
+
+    // 2️⃣ penalizace
+    const newPenalty = prompt("Penalizace (např. +10, DNF, prázdné = bez):", event.penalty || "");
+
+    // uložit
+    event.rider = newRider;
+    event.penalty = newPenalty || "";
+
+    saveAndRender();
 }
 
 // Funkce pro smazání řádku
