@@ -155,31 +155,21 @@
 <!-- ================= VÝSLEDKY ================= -->
 <div id="view-results" class="view">
 
-<h2>Výsledky</h2>
+  <h2>Výsledky</h2>
 
-<select id="stage-select">
-  <option value="1">RZ1</option>
-  <option value="2">RZ2</option>
-  <option value="3">RZ3</option>
-</select>
+  <button onclick="loadResults()">🔄 Načíst výsledky</button>
 
-<button onclick="loadResults()">🔄 Načíst výsledky</button>
-
-<table id="results-table">
-  <thead>
-    <tr>
-      <th>#</th>
-      <th>Start. číslo</th>
-      <th>Jezdec</th>
-      <th>Auto</th>
-      <th>Kategorie</th>
-      <th>Čas</th>
-      <th>Ztráta</th>
-      <th>Penalizace</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+  <table id="results-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Jezdec</th>
+        <th>RZ</th>
+        <th>Čas</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
 </div>
 

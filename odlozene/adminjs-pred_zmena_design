@@ -15,142 +15,92 @@ function saveRaceId() {
 
 
 async function loadResults() {
-  const stage = parseInt(document.getElementById("stage-select").value);
+  const btn = document.querySelector("#view-results button");
 
-  if (!currentRaceId) {
-    alert("Není nastaveno Race ID");
-    return;
+  btn.textContent = "Načítám...";
+  btn.disabled = true;
+
+  try {
+    // 1️⃣ načtení logů ze Supabase
+    const { data: logs, error } = await supabaseClient
+      .from("rally_logs")
+      .select("*")
+      .eq("race_id", currentRaceId);
+
+    if (error) throw error;
+
+    if (!logs || logs.length === 0) {
+      alert("Žádná data pro tento závod.");
+      return;
+    }
+
+    // 2️⃣ výpočet výsledků
+    const results = computeResults(logs);
+
+    console.log("RESULTS:", results);
+
+    // 3️⃣ vykreslení
+    renderResults(results);
+
+    btn.textContent = "✅ Hotovo";
+  } catch (err) {
+    console.error("Chyba:", err);
+    alert("Chyba při načítání výsledků: " + err.message);
+    btn.textContent = "❌ Chyba";
   }
 
-  // 1. Načti logy
-  const { data: logs, error } = await supabaseClient
-    .from("rally_logs")
-    .select("*")
-    .eq("race_id", currentRaceId)
-    .eq("stage", stage);
-
-  if (error) {
-    console.error(error);
-    alert("Chyba při načítání logů");
-    return;
-  }
-
-  // 2. Načti jezdce
-  const { data: riders } = await supabaseClient
-    .from("riders")
-    .select("*")
-    .eq("race_id", currentRaceId);
-
-  const ridersMap = {};
-  riders.forEach(r => {
-    ridersMap[r.number] = r;
-  });
-
-  // 3. Spáruj START + FINISH
-  const results = {};
-
-  logs.forEach(log => {
-    const key = log.rider;
-
-    if (!results[key]) {
-      results[key] = {
-        rider: key,
-        start: null,
-        finish: null,
-        penalty: log.penalty || ""
-      };
-    }
-
-    if (log.type === "START") {
-      results[key].start = log.time_ms;
-    }
-
-    if (log.type === "FINISH") {
-      results[key].finish = log.time_ms;
-      results[key].penalty = log.penalty || "";
-    }
-  });
-
-  // 4. Spočítej časy
-  let finalResults = [];
-
-  for (let key in results) {
-    const r = results[key];
-
-    // ❌ DNF (nemá start nebo finish)
-    if (!r.start || !r.finish) continue;
-
-    let time = r.finish - r.start;
-
-    // penalizace (např. "10" = 10s)
-    if (r.penalty) {
-      const penMs = parseInt(r.penalty) * 1000;
-      if (!isNaN(penMs)) {
-        time += penMs;
-      }
-    }
-
-    finalResults.push({
-      rider: r.rider,
-      time: time,
-      penalty: r.penalty
-    });
-  }
-
-  // 5. Seřaď
-  finalResults.sort((a, b) => a.time - b.time);
-
-  // 6. Spočítej ztrátu
-  const bestTime = finalResults.length > 0 ? finalResults[0].time : 0;
-
-  finalResults = finalResults.map((r, i) => {
-    return {
-      ...r,
-      position: i + 1,
-      gap: r.time - bestTime
-    };
-  });
-
-  // 7. Render
-  renderResults(finalResults, ridersMap);
+  setTimeout(() => {
+    btn.textContent = "🔄 Načíst výsledky";
+    btn.disabled = false;
+  }, 2000);
 }
 
-//výsledky format
-function formatMs(ms) {
-  const m = Math.floor(ms / 60000);
-  const s = Math.floor((ms % 60000) / 1000);
-  const msPart = Math.floor(ms % 1000);
+function renderResults(results) {
+  const table = document.getElementById("results-table");
+  const thead = table.querySelector("thead");
+  const tbody = table.querySelector("tbody");
 
-  return `${m}:${String(s).padStart(2, "0")}.${String(msPart).padStart(3, "0")}`;
-}
-
-function renderResults(results, ridersMap) {
-  const tbody = document.querySelector("#results-table tbody");
-  tbody.innerHTML = "";
+  // 🧠 zjisti všechny RZ
+  const stagesSet = new Set();
 
   results.forEach(r => {
-    const rider = ridersMap[r.rider] || {};
+    Object.keys(r.stages).forEach(s => stagesSet.add(s));
+  });
 
+  const stages = Array.from(stagesSet).sort((a, b) => a - b);
+
+  // ===== HEADER =====
+  thead.innerHTML = `
+    <tr>
+      <th>#</th>
+      <th>Jezdec</th>
+      ${stages.map(s => `<th>RZ${s}</th>`).join("")}
+      <th>Celkem</th>
+    </tr>
+  `;
+
+  // ===== BODY =====
+  tbody.innerHTML = "";
+
+  results.forEach((r, index) => {
     const tr = document.createElement("tr");
 
+    const stageCells = stages.map(s => {
+      const stage = r.stages[s];
+      if (!stage || !stage.time) return "<td>-</td>";
+      return `<td>${formatStageTime(stage.time)}</td>`;
+    }).join("");
+
     tr.innerHTML = `
-      <td>${r.position}</td>
+      <td>${r.dnf ? "DNF" : index + 1}</td>
       <td>#${r.rider}</td>
-      <td>${rider.name || "-"}</td>
-      <td>${(rider.car_brand || "") + " " + (rider.car_model || "")}</td>
-      <td>${rider.category || "-"}</td>
-      <td>${formatMs(r.time)}</td>
-      <td>${r.position === 1 ? "-" : "+" + formatMs(r.gap)}</td>
-      <td>${r.penalty || "-"}</td>
+      ${stageCells}
+      <td>${r.dnf ? "DNF" : formatStageTime(r.totalTime)}</td>
     `;
-
-
 
     tbody.appendChild(tr);
   });
-
 }
-
 
 function formatStageTime(ms) {
   if (!ms) return "-";
