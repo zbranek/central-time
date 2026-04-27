@@ -251,20 +251,21 @@ function renderRecentFinishes() {
       border-radius:6px;
     `;
 
-    div.innerHTML = `
-      <div>
-        <strong>#${log.rider}</strong>
-        <span style="color:#888;">${formatTime(log.time)}</span>
-      </div>
+div.innerHTML = `
+  <div>
+    <strong>#${log.rider}</strong>
+    <span style="color:#888;">${formatTime(log.time)}</span>
+    ${log.penalty ? `<span style="color:orange;"> | ⚠ ${log.penalty}</span>` : ""}
+  </div>
 
-      <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
-        <button onclick="setPenaltyFromFinish(${index}, 'A')">+A</button>
-        <button onclick="setPenaltyFromFinish(${index}, 'B')">+B</button>
-        <button onclick="setPenaltyFromFinish(${index}, 'C')">+C</button>
-        <button onclick="setPenaltyFromFinish(${index}, 'DNF')" style="color:#f55;">DNF</button>
-        <button onclick="setPenaltyFromFinish(${index}, '')">OK</button>
-      </div>
-    `;
+  <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
+    <button onclick="setPenaltyFromFinish(${index}, 'A')">PEN A</button>
+    <button onclick="setPenaltyFromFinish(${index}, 'B')">PEN B</button>
+    <button onclick="setPenaltyFromFinish(${index}, 'C')">PEN C</button>
+    <button onclick="setPenaltyFromFinish(${index}, 'DNF')" style="color:#f55;">DNF</button>
+    <button onclick="setPenaltyFromFinish(${index}, '')">OK</button>
+  </div>
+`;
 
     container.appendChild(div);
   });
@@ -399,7 +400,9 @@ function renderLog() {
         <span style="color:#888; font-size:0.8rem;">${currentRaceId || "---"}</span> | 
         <span style="color: #0f0; opacity: 0.7;">RZ${e.stage}</span> | 
         <strong>${e.type}</strong> | 
-        <span style="color:yellow; font-weight:bold;">#${e.rider}</span> | 
+        <span style="color:${e.rider === '?' ? '#f55' : 'yellow'}; font-weight:bold;">
+  #${e.rider}
+</span> | 
         ${formatTime(e.time)} ${e.penalty ? " | ⚠ " + e.penalty : ""}
     </div>
     <button onclick="deleteEvent(${actualIndex})" style="background:none; border:1px solid #600; color:#f00; padding:2px 8px; font-size:0.8rem; border-radius: 4px;">SMAZAT</button>
