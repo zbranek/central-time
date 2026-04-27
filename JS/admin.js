@@ -1,32 +1,56 @@
 
-function saveRaceId() {
-    const input = document.getElementById('race-id-input').value.trim();
 
-    if (input.length !== 5 || isNaN(input)) {
-        alert("ID musí být 5 číslic");
-        return;
-    }
 
-    localStorage.setItem("rally_race_id", input);
-    window.APP.raceId = input;
+//DNF 
+function parsePenalty(code) {
+  if (!code) return { time: 0, dnf: false };
 
-    document.getElementById('race-id-status').textContent = "✅ " + input;
+  code = code.trim().toUpperCase();
+
+  // 🚨 DNF
+  if (code === "DNF") {
+    return { time: 0, dnf: true };
+  }
+
+  // ➕ odstranění "+"
+  if (code.startsWith("+")) {
+    code = code.substring(1);
+  }
+
+  // ⏱ sekundy (výchozí)
+  if (!isNaN(code)) {
+    return { time: parseInt(code) * 1000, dnf: false };
+  }
+
+  // ⏱ "10S"
+  if (code.endsWith("S")) {
+    return { time: parseInt(code) * 1000, dnf: false };
+  }
+
+  // ⏱ "1M"
+  if (code.endsWith("M")) {
+    return { time: parseInt(code) * 60000, dnf: false };
+  }
+
+  return { time: 0, dnf: false };
 }
 
 
 async function loadResults() {
-  const stage = parseInt(document.getElementById("stage-select").value);
 
-  if (!currentRaceId) {
+  const stage = parseInt(document.getElementById("stage-select").value);
+  const raceId = getRaceId();
+
+  if (!raceId) {
     alert("Není nastaveno Race ID");
     return;
   }
 
-  // 1. Načti logy
+  // 1️⃣ logy
   const { data: logs, error } = await supabaseClient
     .from("rally_logs")
     .select("*")
-    .eq("race_id", currentRaceId)
+    .eq("race_id", raceId)
     .eq("stage", stage);
 
   if (error) {
@@ -35,83 +59,87 @@ async function loadResults() {
     return;
   }
 
-  // 2. Načti jezdce
+  // 2️⃣ riders
   const { data: riders } = await supabaseClient
     .from("riders")
     .select("*")
-    .eq("race_id", currentRaceId);
+    .eq("race_id", raceId);
 
   const ridersMap = {};
   riders.forEach(r => {
-    ridersMap[r.number] = r;
+    ridersMap[r.rider_number] = r;
   });
 
-  // 3. Spáruj START + FINISH
-  const results = {};
+  // 3️⃣ výpočet
+ const map = {};
 
-  logs.forEach(log => {
-    const key = log.rider;
+logs.forEach(log => {
+  const rider = String(log.rider);
+  if (!rider) return;
 
-    if (!results[key]) {
-      results[key] = {
-        rider: key,
-        start: null,
-        finish: null,
-        penalty: log.penalty || ""
-      };
-    }
-
-    if (log.type === "START") {
-      results[key].start = log.time_ms;
-    }
-
-    if (log.type === "FINISH") {
-      results[key].finish = log.time_ms;
-      results[key].penalty = log.penalty || "";
-    }
-  });
-
-  // 4. Spočítej časy
-  let finalResults = [];
-
-  for (let key in results) {
-    const r = results[key];
-
-    // ❌ DNF (nemá start nebo finish)
-    if (!r.start || !r.finish) continue;
-
-    let time = r.finish - r.start;
-
-    // penalizace (např. "10" = 10s)
-    if (r.penalty) {
-      const penMs = parseInt(r.penalty) * 1000;
-      if (!isNaN(penMs)) {
-        time += penMs;
-      }
-    }
-
-    finalResults.push({
-      rider: r.rider,
-      time: time,
-      penalty: r.penalty
-    });
+  if (!map[rider]) {
+    map[rider] = {
+      rider,
+      start: null,
+      finish: null,
+      penalty: 0,
+      dnf: false
+    };
   }
 
-  // 5. Seřaď
-  finalResults.sort((a, b) => a.time - b.time);
+  if (log.type === "START") {
+    map[rider].start = log.time_ms;
+  }
 
-  // 6. Spočítej ztrátu
-  const bestTime = finalResults.length > 0 ? finalResults[0].time : 0;
+  if (log.type === "FINISH") {
+    map[rider].finish = log.time_ms;
 
-  finalResults = finalResults.map((r, i) => {
+    if (log.penalty) {
+      const p = parsePenalty(log.penalty);
+
+      map[rider].penalty += p.time;
+
+      if (p.dnf) {
+        map[rider].dnf = true;
+      }
+    }
+  }
+});
+
+  // 4️⃣ výsledky
+  let results = Object.values(map).map(r => {
+
+   if (!r.start || !r.finish || r.dnf) {
+  return {
+    rider: r.rider,
+    dnf: true
+  };
+}
+
     return {
-      ...r,
-      position: i + 1,
-      gap: r.time - bestTime
+      rider: r.rider,
+      time: r.finish - r.start + r.penalty,
+      penalty: r.penalty,
+      dnf: false
     };
   });
 
-  // 7. Render
+  // 5️⃣ třídění
+  const classified = results
+    .filter(r => !r.dnf)
+    .sort((a, b) => a.time - b.time);
+
+  const dnf = results.filter(r => r.dnf);
+
+  // 6️⃣ pořadí
+  classified.forEach((r, i) => {
+    r.position = i + 1;
+    r.gap = i === 0 ? 0 : r.time - classified[0].time;
+  });
+
+  // 7️⃣ final
+  const finalResults = [...classified, ...dnf];
+
   renderResults(finalResults, ridersMap);
 }
 
@@ -133,18 +161,21 @@ function renderResults(results, ridersMap) {
 
     const tr = document.createElement("tr");
 
-    tr.innerHTML = `
-      <td>${r.position}</td>
-      <td>#${r.rider}</td>
-      <td>${rider.name || "-"}</td>
-      <td>${(rider.car_brand || "") + " " + (rider.car_model || "")}</td>
-      <td>${rider.category || "-"}</td>
-      <td>${formatMs(r.time)}</td>
-      <td>${r.position === 1 ? "-" : "+" + formatMs(r.gap)}</td>
-      <td>${r.penalty || "-"}</td>
-    `;
+   tr.innerHTML = `
+  <td>${r.dnf ? "DNF" : r.position}</td>
+  <td>#${r.rider}</td>
+  <td>${rider.name || "-"}</td>
+  <td>${(rider.car_brand || "") + " " + (rider.car_model || "")}</td>
+  <td>${rider.category || "-"}</td>
+  <td>${r.dnf ? "-" : formatMs(r.time)}</td>
+  <td>${r.dnf || r.position === 1 ? "-" : "+" + formatMs(r.gap)}</td>
+  <td>${r.penalty ? formatMs(r.penalty) : "-"}</td>
+`;
 
-
+if (r.dnf) {
+  tr.style.background = "#330000";
+  tr.style.color = "#ff5555";
+}
 
     tbody.appendChild(tr);
   });
@@ -432,108 +463,7 @@ function getRaceId() {
 
 
 //výpočet výsledů
-function computeResults(logs) {
-  const ridersMap = {};
 
-  // 1️⃣ seskupení podle jezdec + RZ
-  logs.forEach(log => {
-    if (!log.rider) return;
-
-    const rider = log.rider;
-    const stage = log.stage;
-
-    if (!ridersMap[rider]) {
-      ridersMap[rider] = {
-        rider: rider,
-        stages: {},
-        totalTime: 0,
-        totalPenalty: 0,
-        dnf: false
-      };
-    }
-
-    if (!ridersMap[rider].stages[stage]) {
-      ridersMap[rider].stages[stage] = {
-        starts: [],
-        finishes: [],
-        penalty: 0,
-        rawPenalty: ""
-      };
-    }
-
-    const stageObj = ridersMap[rider].stages[stage];
-
-    if (log.type === "START") {
-      stageObj.starts.push(log.time_ms);
-    }
-
-    if (log.type === "FINISH") {
-      stageObj.finishes.push(log.time_ms);
-
-      // penalizace bereme z FINISH logu
-      if (log.penalty) {
-        stageObj.rawPenalty = log.penalty;
-
-        if (log.penalty.toUpperCase() === "DNF") {
-          ridersMap[rider].dnf = true;
-        }
-
-        // časová penalizace např. "+10"
-        if (log.penalty.startsWith("+")) {
-          const val = parseInt(log.penalty.replace("+", ""));
-          if (!isNaN(val)) {
-            stageObj.penalty = val * 1000; // převod na ms
-          }
-        }
-      }
-    }
-  });
-
-  // 2️⃣ výpočet časů
-  const results = [];
-
-  Object.values(ridersMap).forEach(r => {
-    let total = 0;
-    let totalPenalty = 0;
-
-    Object.entries(r.stages).forEach(([stage, s]) => {
-      if (s.starts.length === 0 || s.finishes.length === 0) {
-        r.dnf = true;
-        return;
-      }
-
-      // první START, poslední FINISH
-      const start = Math.min(...s.starts);
-      const finish = Math.max(...s.finishes);
-
-      let stageTime = finish - start;
-
-      // přičti penalizaci
-      stageTime += s.penalty;
-
-      s.time = stageTime;
-      s.start = start;
-      s.finish = finish;
-
-      total += stageTime;
-      totalPenalty += s.penalty;
-    });
-
-    r.totalTime = total;
-    r.totalPenalty = totalPenalty;
-
-    results.push(r);
-  });
-
-  // 3️⃣ seřazení
-  results.sort((a, b) => {
-    if (a.dnf && !b.dnf) return 1;
-    if (!a.dnf && b.dnf) return -1;
-    return a.totalTime - b.totalTime;
-  });
-
-  return results;
-}
 
 
 
