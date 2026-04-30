@@ -78,6 +78,36 @@
     th {
       background: #222;
     }
+
+
+    .race-setup {
+  padding: 15px;
+  margin: 10px;
+  border: 2px solid #006600;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.race-setup input {
+  width: 100%;
+  font-size: 2.5rem;      /* 🔥 velké čísla */
+  text-align: center;
+  padding: 10px;
+  margin: 10px 0;
+  background: #222;
+  color: #0f0;
+  border: 1px solid #0f0;
+  letter-spacing: 0.3em;  /* mezery mezi čísly */
+}
+
+.race-setup button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.2rem;
+  background: #004400;
+  color: #0f0;
+  border: 1px solid #0f0;
+}
   </style>
 </head>
 
@@ -87,9 +117,24 @@
   <button class="tab-btn active" onclick="showView('admin')">ADMINISTRACE</button>
   <button class="tab-btn" onclick="showView('itinerary')">ITINERÁŘ</button>
   <button class="tab-btn" onclick="showView('results')">VÝSLEDKY</button>
-  <input id="race-id-input" placeholder="ID závodu (5 číslic)">
-<button onclick="saveRaceId()">Uložit</button>
+  
 </header>
+
+<div class="race-setup">
+  <label>ID ZÁVODU</label>
+  
+  <input 
+    type="number"
+    id="race-id-input"
+    placeholder="12345"
+    maxlength="5"
+    inputmode="numeric"
+  >
+
+  <button onclick="saveRaceId()">✅ Potvrdit</button>
+</div>
+
+</div>
 
 <!-- ================= ADMINISTRACE ================= -->
 <div id="view-admin" class="view active">
@@ -107,6 +152,40 @@
   <div id="riders-status" style="margin:10px 0; font-size:0.9rem;"></div>
 
   <button onclick="addRider()">➕ Přidat jezdce</button>
+
+  <!--
+  <section id="view-admin" class="view active">-->
+
+  <!-- 🔥 ID ZÁVODU -->
+  <!--
+  <div class="race-setup">
+    
+    <div id="race-id-status"></div>
+
+    <div id="race-id-display" style="font-size:3rem; letter-spacing:0.3em;">
+      -----
+    </div>
+
+    <div class="keypad">
+      <button onclick="pressRaceNum(1)">1</button>
+      <button onclick="pressRaceNum(2)">2</button>
+      <button onclick="pressRaceNum(3)">3</button>
+
+      <button onclick="pressRaceNum(4)">4</button>
+      <button onclick="pressRaceNum(5)">5</button>
+      <button onclick="pressRaceNum(6)">6</button>
+
+      <button onclick="pressRaceNum(7)">7</button>
+      <button onclick="pressRaceNum(8)">8</button>
+      <button onclick="pressRaceNum(9)">9</button>
+
+      <button onclick="clearRaceId()" style="color:red;">C</button>
+      <button onclick="pressRaceNum(0)">0</button>
+      <button onclick="saveRaceId()" style="background:#060;color:#fff;">OK</button>
+    </div>
+
+  </div>  -->
+  
 
   <table id="riders-table">
     <thead>

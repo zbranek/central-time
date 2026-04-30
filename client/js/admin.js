@@ -1,5 +1,13 @@
 
+//vlozeni cisla zavodu - automat. ulozeni
 
+const input = document.getElementById("race-id-input");
+
+input.addEventListener("input", () => {
+  if (input.value.length === 5) {
+    saveRaceId();
+  }
+});
 
 function getRaceId() {
   return localStorage.getItem('rally_race_id') || "";
