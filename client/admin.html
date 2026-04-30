@@ -104,6 +104,8 @@
   <input id="car-model" placeholder="Model">
   <input id="category" placeholder="Kategorie">
 
+  <div id="riders-status" style="margin:10px 0; font-size:0.9rem;"></div>
+
   <button onclick="addRider()">➕ Přidat jezdce</button>
 
   <table id="riders-table">
@@ -119,6 +121,9 @@
     </thead>
     <tbody></tbody>
   </table>
+
+  <div id="riders-list"></div>
+  <div id="riders-status">Načítám...</div>
 
 </div>
 
@@ -185,8 +190,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-<script src="../js/supabase.js"></script>
-<script src="../js/admin.js"></script>
+<script src="./js/supabase.js"></script>
+<script src="./js/admin.js"></script>
 
 </body>
 </html>

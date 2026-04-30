@@ -1,6 +1,11 @@
 
 
 
+function getRaceId() {
+  return localStorage.getItem('rally_race_id') || "";
+}
+const raceId = getRaceId();
+
 //DNF 
 function parsePenalty(code) {
   if (!code) return { time: 0, dnf: false };
@@ -68,6 +73,8 @@ async function loadResults() {
   const ridersMap = {};
   riders.forEach(r => {
     ridersMap[r.rider_number] = r;
+
+    loadRiders();
   });
 
   // 3️⃣ výpočet
@@ -206,6 +213,8 @@ function saveRaceId() {
   const val = document.getElementById('race-id-input').value;
   localStorage.setItem('rally_race_id', val);
   currentRaceId = val;
+
+   loadRiders(); // 🔥 přidej sem
 }
 
 /*********************************
@@ -273,7 +282,29 @@ async function loadRiders() {
 
 function renderRiders(riders) {
   const tbody = document.querySelector("#riders-table tbody");
+  const status = document.getElementById("riders-status");
+
+  if (!tbody) {
+    console.error("❌ Nenalezen #riders-table tbody");
+    return;
+  }
+
   tbody.innerHTML = "";
+
+  // 🔥 STATUS
+  if (status) {
+    if (riders.length === 0) {
+      status.textContent = "Žádní jezdci pro tento závod";
+      status.style.color = "#f55";
+    } else {
+      status.textContent = `Načteno ${riders.length} jezdců`;
+      status.style.color = "#0f0";
+    }
+  }
+
+  if (!status) {
+  console.warn("⚠️ Nenalezen #riders-status");
+}
 
   riders.forEach(r => {
     const tr = document.createElement("tr");
@@ -308,6 +339,27 @@ async function deleteRider(id) {
   }
 
   loadRiders();
+}
+
+async function loadRiders() {
+  if (!currentRaceId) {
+    console.warn("Chybí race_id");
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("riders")
+    .select("*")
+    .eq("race_id", currentRaceId)
+    .order("rider_number", { ascending: true });
+
+  if (error) {
+    console.error("Chyba při načítání riders:", error);
+    alert("Nepodařilo se načíst startovní listinu");
+    return;
+  }
+
+  renderRiders(data);
 }
 
 
