@@ -124,11 +124,12 @@
   <label>ID ZÁVODU</label>
   
   <input 
-    type="number"
+     type="text"
     id="race-id-input"
-    placeholder="12345"
     maxlength="5"
     inputmode="numeric"
+    pattern="[0-9]*"
+    placeholder="12345"
   >
 
   <button onclick="saveRaceId()">✅ Potvrdit</button>
