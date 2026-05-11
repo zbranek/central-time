@@ -143,15 +143,19 @@
 
   <input id="rider-number" placeholder="Číslo jezdce">
   <input id="rider-name" placeholder="Jméno a příjmení">
-  <input id="co-driver" placeholder="Spolujezdec">
+  <input id="co-driver" placeholder="Jezdec/Spolujezdec">
   <input id="nationality" placeholder="Národnost">
   <input id="car-brand" placeholder="Značka">
   <input id="car-model" placeholder="Model">
   <input id="category" placeholder="Kategorie">
+  <input id="team" placeholder="Team">
+  
 
   <div id="riders-status" style="margin:10px 0; font-size:0.9rem;"></div>
 
-  <button onclick="addRider()">➕ Přidat jezdce</button>
+  <button id="save-rider-btn" onclick="addRider()">
+  ➕ Přidat jezdce
+</button>
 
   <!--
   <section id="view-admin" class="view active">-->
@@ -191,11 +195,14 @@
     <thead>
       <tr>
         <th>#</th>
-        <th>Jméno</th>
-        <th>Spolujezdec</th>
-        <th>Auto</th>
-        <th>Kategorie</th>
-        <th></th>
+    <th>Jezdec</th>
+    <th>Národnost</th>
+    <th>Spolujezdec</th>
+    <th>Auto</th>
+    <th>Kategorie</th>
+    <th>Tým</th>
+    <th>Chip</th>
+    <th>❌</th>
       </tr>
     </thead>
     <tbody></tbody>

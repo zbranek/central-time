@@ -1,13 +1,20 @@
 
+
+//globalni promen. 
+
+let editingRiderId = null;
+let riders = [];
+
 //vlozeni cisla zavodu - automat. ulozeni
 
 const input = document.getElementById("race-id-input");
 
-input.addEventListener("input", () => {
+//POTVRZENÍ ZADÁNÍ ČÍSLA ZÁVODU AUTOMATICKY BEZ TLAČÍTKA
+/*input.addEventListener("input", () => {
   if (input.value.length === 5) {
     saveRaceId();
   }
-});
+});*/
 
 function getRaceId() {
   return localStorage.getItem('rally_race_id') || "";
@@ -82,7 +89,6 @@ async function loadResults() {
   riders.forEach(r => {
     ridersMap[r.rider_number] = r;
 
-    loadRiders();
   });
 
   // 3️⃣ výpočet
@@ -219,16 +225,19 @@ function showView(id) {
 
 function saveRaceId() {
   const val = document.getElementById('race-id-input').value;
-  localStorage.setItem('rally_race_id', val);
-  currentRaceId = val;
 
-   loadRiders(); // 🔥 přidej sem
+  localStorage.setItem('rally_race_id', val);
+
+  currentRaceId = val;
+  window.APP.raceId = val;
+
+  loadRiders();
 }
 
 /*********************************
  * ADMIN - RIDERS
  *********************************/
-let riders = [];
+
 
 async function addRider() {
   if (!window.APP.raceId) {
@@ -236,16 +245,19 @@ async function addRider() {
     return;
   }
 
-  const rider = {
-    race_id: window.APP.raceId,
-    rider_number: document.getElementById('rider-number').value,
-    name: document.getElementById('rider-name').value,
-    co_driver: document.getElementById('co-driver').value,
-    nationality: document.getElementById('nationality').value,
-    car_brand: document.getElementById('car-brand').value,
-    car_model: document.getElementById('car-model').value,
-    category: document.getElementById('category').value
-  };
+const rider = {
+  id: editingRiderId || undefined,
+
+  race_id: window.APP.raceId,
+  rider_number: document.getElementById('rider-number').value,
+  name: document.getElementById('rider-name').value,
+  co_driver: document.getElementById('co-driver').value,
+  nationality: document.getElementById('nationality').value,
+  car_brand: document.getElementById('car-brand').value,
+  car_model: document.getElementById('car-model').value,
+  category: document.getElementById('category').value,
+  team: document.getElementById('team').value
+};
 
   const { error } = await window.supabaseClient
   .from("riders")
@@ -259,6 +271,15 @@ async function addRider() {
 
   clearRiderForm();
   loadRiders();
+
+  editingRiderId = null;
+
+const btn = document.getElementById("save-rider-btn");
+
+if (btn) {
+  btn.textContent = "➕ Přidat jezdce";
+  btn.style.background = "";
+  }
 }
 
 function clearRiderForm() {
@@ -269,24 +290,10 @@ function clearRiderForm() {
   document.getElementById('car-brand').value = "";
   document.getElementById('car-model').value = "";
   document.getElementById('category').value = "";
+  document.getElementById('team').value = "";
 }
 
-async function loadRiders() {
-  if (!window.APP.raceId) return;
 
-  const { data, error } = await window.supabaseClient
-    .from("riders")
-    .select("*")
-    .eq("race_id", window.APP.raceId)
-    .order("rider_number", { ascending: true });
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  renderRiders(data);
-}
 
 function renderRiders(riders) {
   const tbody = document.querySelector("#riders-table tbody");
@@ -313,23 +320,51 @@ function renderRiders(riders) {
   if (!status) {
   console.warn("⚠️ Nenalezen #riders-status");
 }
-
+//tabulka v Administraci - zobrazeni info k registraci
+//<td>${r.co_driver_nationality || ""}</td>
   riders.forEach(r => {
     const tr = document.createElement("tr");
 
+tr.style.cursor = "pointer";
+tr.onclick = () => editRider(r);
+
     tr.innerHTML = `
-      <td>${r.rider_number}</td>
-      <td>${r.name}</td>
-      <td>${r.co_driver || ""}</td>
-      <td>${r.car_brand || ""} ${r.car_model || ""}</td>
-      <td>${r.category || ""}</td>
-      <td>
-        <button onclick="deleteRider(${r.id})">❌</button>
-      </td>
-    `;
+  <td>${r.rider_number || ""}</td>
+  <td>${r.name || ""}</td>
+  <td>${r.nationality || ""}</td>
+  <td>${r.co_driver || ""}</td>
+  <td>${r.car_brand || ""} ${r.car_model || ""}</td>
+  <td>${r.category || ""}</td>
+  <td>${r.team || ""}</td>
+  <td>
+  <button onclick="deleteRider(${r.id})">❌</button>
+  </td>
+`;
+
 
     tbody.appendChild(tr);
   });
+}
+
+function editRider(rider) {
+
+  editingRiderId = rider.id;
+
+  document.getElementById("rider-number").value = rider.rider_number || "";
+  document.getElementById("rider-name").value = rider.name || "";
+  document.getElementById("nationality").value = rider.nationality || "";
+  document.getElementById("co-driver").value = rider.co_driver || "";
+  document.getElementById("car-brand").value = rider.car_brand || "";
+  document.getElementById("car-model").value = rider.car_model || "";
+  document.getElementById("category").value = rider.category || "";
+  document.getElementById("team").value = rider.team || "";
+
+  const btn = document.getElementById("save-rider-btn");
+
+  if (btn) {
+    btn.textContent = "💾 Uložit změny";
+    btn.style.background = "#664400";
+  }
 }
 
 async function deleteRider(id) {
@@ -530,6 +565,10 @@ function getRaceId() {
 //---------------
 
 document.addEventListener("DOMContentLoaded", () => {
+
+  currentRaceId = getRaceId();
+  window.APP.raceId = currentRaceId;
+
   loadRiders();
 });
 
