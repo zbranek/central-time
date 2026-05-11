@@ -11,10 +11,13 @@ let startPlan = null; // Zde bude uložen naplánovaný start jednoho jezdce
 let pendingFinishIndex = null;
 //let timeOffset = 0; 
 let timeOffset = parseInt(localStorage.getItem('rally_time_offset')) || 0;
-let currentPenalty = ""; // Dočasná proměnná pro vybranou penalizaci
+
 let lastFinishTime = 0;
 const FINISH_DEBOUNCE_MS = 2000;
-let currentRaceId = window.APP.raceId;
+let currentRaceId =
+  window.APP?.raceId ||
+  localStorage.getItem('rally_race_id') ||
+  "";
 
 
 
@@ -112,18 +115,7 @@ function updateOffsetDisplay() {
     }
 }
 
-//Penalizace 
-function setPenalty(code) {
-    currentPenalty = code;
-    // Vizuální zpětná vazba
-    document.getElementById('active-penalty-display').textContent = code ? "Vybrána penalizace: " + code : "";
-    
-    // Zvýraznění tlačítek
-    document.querySelectorAll('.p-btn').forEach(btn => {
-        btn.style.background = (btn.textContent === code) ? "yellow" : "#444";
-        btn.style.color = (btn.textContent === code) ? "black" : "#0f0";
-    });
-}
+
 
 /*********************************
  * 4. LOGIKA STARTU (Inteligentní start)
@@ -222,10 +214,116 @@ function cancelStart() {
  * 5. LOGIKA CÍLE
  *********************************/
 
+//buffer 3 posledních logů v Cíl
+
+let recentFinishes = [];
+
+function pushRecentFinish(log) {
+  recentFinishes.unshift(log);
+  if (recentFinishes.length > 3) recentFinishes.pop();
+  renderRecentFinishes();
+}
+
+function setPenaltyFromFinish(index, value) {
+  const log = recentFinishes[index];
+  if (!log) return;
+
+  log.penalty = value;
+
+  updateLogPenalty(log.id, value);
+  renderRecentFinishes();
+}
+
+function renderRecentFinishes() {
+  const container = document.getElementById("recent-finishes");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  recentFinishes.forEach((log, index) => {
+    const div = document.createElement("div");
+
+    div.style.cssText = `
+      background:#222;
+      padding:10px;
+      margin-bottom:8px;
+      border:1px solid #444;
+      border-radius:6px;
+    `;
+
+div.innerHTML = `
+  <div>
+    <strong>#${log.rider}</strong>
+    <span style="color:#888;">${formatTime(log.time)}</span>
+    ${log.penalty ? `<span style="color:orange;"> | ⚠ ${log.penalty}</span>` : ""}
+  </div>
+
+  <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
+    <button onclick="setPenaltyFromFinish(${index}, 'A')">PEN A</button>
+    <button onclick="setPenaltyFromFinish(${index}, 'B')">PEN B</button>
+    <button onclick="setPenaltyFromFinish(${index}, 'C')">PEN C</button>
+    <button onclick="setPenaltyFromFinish(${index}, 'DNF')" style="color:#f55;">DNF</button>
+    <button onclick="setPenaltyFromFinish(${index}, '')">OK</button>
+  </div>
+`;
+
+    container.appendChild(div);
+  });
+}
+
+async function updateLogPenalty(logId, penalty) {
+  const { error } = await supabaseClient
+    .from("rally_logs")
+    .update({ penalty })
+    .eq("event_id", logId);
+
+  if (error) {
+    console.error(error);
+    alert("Chyba při aktualizaci penalizace");
+  }
+}
+
+ 
+
+  recentFinishes.forEach((log, index) => {
+    const div = document.createElement("div");
+
+    div.style.cssText = `
+      background:#222;
+      padding:10px;
+      margin-bottom:8px;
+      border:1px solid #444;
+      border-radius:6px;
+    `;
+
+    div.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong>#${log.rider}</strong>
+          <span style="color:#888;">${log.time_ms}</span>
+        </div>
+      </div>
+
+      <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
+        
+        <button onclick="setPenaltyFromFinish(${index}, 'A')">+A</button>
+        <button onclick="setPenaltyFromFinish(${index}, 'B')">+B</button>
+        <button onclick="setPenaltyFromFinish(${index}, 'C')">+C</button>
+        <button onclick="setPenaltyFromFinish(${index}, 'DNF')" style="color:#f55;">DNF</button>
+        <button onclick="setPenaltyFromFinish(${index}, '')">OK</button>
+
+      </div>
+    `;
+
+    container.appendChild(div);
+  });
+
+
 // Tlačítko CÍL - zaznamená čas okamžitě
 document.getElementById('finishBtn').onclick = function() {
     const now = Date.now() + timeOffset;
     const index = recordEvent("FINISH", "?", now);
+    pushRecentFinish(events[events.length - 1]);
     pendingFinishIndex = index;
     
     // Otevřít okno pro zadání čísla
@@ -237,14 +335,14 @@ function confirmFinishRider() {
     const riderNum = document.getElementById('finishRiderInput').value;
     if (riderNum && pendingFinishIndex !== null) {
         events[pendingFinishIndex].rider = riderNum;
-        events[pendingFinishIndex].penalty = currentPenalty; // Uložíme kód
+        
         
         saveAndRender();
         
         // Reset a zavření
         document.getElementById('finishModal').classList.add('hidden');
         pendingFinishIndex = null;
-        setPenalty(""); // Reset penalizace pro příště
+        
     }
 }
 
@@ -302,7 +400,9 @@ function renderLog() {
         <span style="color:#888; font-size:0.8rem;">${currentRaceId || "---"}</span> | 
         <span style="color: #0f0; opacity: 0.7;">RZ${e.stage}</span> | 
         <strong>${e.type}</strong> | 
-        <span style="color:yellow; font-weight:bold;">#${e.rider}</span> | 
+        <span style="color:${e.rider === '?' ? '#f55' : 'yellow'}; font-weight:bold;">
+  #${e.rider}
+</span> | 
         ${formatTime(e.time)} ${e.penalty ? " | ⚠ " + e.penalty : ""}
     </div>
     <button onclick="deleteEvent(${actualIndex})" style="background:none; border:1px solid #600; color:#f00; padding:2px 8px; font-size:0.8rem; border-radius: 4px;">SMAZAT</button>
@@ -485,20 +585,15 @@ function openFinishModal() {
 function handleFinishFromArduino(rider = "") {
   const now = getCentralTime();
 
-  // ⛔ debounce
-  if (now - lastFinishTime < FINISH_DEBOUNCE_MS) {
-    console.log("IGNORED: debounce");
-    return;
-  }
-
+  if (now - lastFinishTime < FINISH_DEBOUNCE_MS) return;
   lastFinishTime = now;
 
   const event = {
-    rider: rider,       // může být ""
+    id: crypto.randomUUID(),
+    rider: rider || "",
     stage: currentStage,
     type: "FINISH",
-    time: now,
-    valid: true
+    time: now
   };
 
   events.push(event);
@@ -506,7 +601,9 @@ function handleFinishFromArduino(rider = "") {
 
   saveAndRender();
 
-  // pokud není jezdec → otevřít zadání
+  // 👇 TOTO JE KLÍČOVÉ
+  pushRecentFinish(event);
+
   if (!rider) {
     openFinishModal();
   }
@@ -566,6 +663,7 @@ function handleSerialMessage(msg) {
     const parts = msg.split(";");
     const rider = parts[1] || "";
     handleFinishFromArduino(rider);
+    pushRecentFinish(event);
   }
 
   if (msg.startsWith("START")) {
@@ -629,13 +727,9 @@ const rows = events.map(e => ({
     uploaded_at: new Date().toISOString()
 }));
 
-await supabaseClient
+const { error } = await supabaseClient
   .from("rally_logs")
   .upsert(rows, { onConflict: "event_id" });
-
-const { error } = await supabaseClient
-    .from("rally_logs")
-    .upsert(rows, { onConflict: "event_id" });
 
 if (error) throw error;
 
