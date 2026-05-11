@@ -131,6 +131,17 @@
 
 <section id="view-setup" class="view">
     <h2>NASTAVENÍ</h2>
+
+        <div class="setup-item">
+    <label>KOREKCE ČASU (ms):</label><br>
+    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px;">
+        <button onclick="adjustOffset(-1000)">-1s</button>
+        <button onclick="adjustOffset(-100)">-0.1s</button>
+        <span id="current-offset-display" style="font-family: monospace; min-width: 60px;">0</span>
+        <button onclick="adjustOffset(100)">+0.1s</button>
+        <button onclick="adjustOffset(1000)">+1s</button>
+    </div>
+    <p style="font-size: 0.8rem; color: #888;">Slouží k synchronizaci s ostatními telefony.</p>
     
     <div class="setup-item">
         <label>ROLE ZAŘÍZENÍ:</label><br>
@@ -177,16 +188,7 @@
         <input type="number" id="startInterval" value="60" style="width: 100px; margin-top: 10px;">
     </div>
 
-    <div class="setup-item">
-    <label>KOREKCE ČASU (ms):</label><br>
-    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px;">
-        <button onclick="adjustOffset(-1000)">-1s</button>
-        <button onclick="adjustOffset(-100)">-0.1s</button>
-        <span id="current-offset-display" style="font-family: monospace; min-width: 60px;">0</span>
-        <button onclick="adjustOffset(100)">+0.1s</button>
-        <button onclick="adjustOffset(1000)">+1s</button>
-    </div>
-    <p style="font-size: 0.8rem; color: #888;">Slouží k synchronizaci s ostatními telefony.</p>
+
 </div>
 
 <div class="setup-item" style="border: 2px solid #600;">

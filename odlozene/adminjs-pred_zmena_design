@@ -1,106 +1,208 @@
 
-function saveRaceId() {
-    const input = document.getElementById('race-id-input').value.trim();
 
-    if (input.length !== 5 || isNaN(input)) {
-        alert("ID musí být 5 číslic");
-        return;
-    }
+//globalni promen. 
 
-    localStorage.setItem("rally_race_id", input);
-    window.APP.raceId = input;
+let editingRiderId = null;
+let riders = [];
 
-    document.getElementById('race-id-status').textContent = "✅ " + input;
+//vlozeni cisla zavodu - automat. ulozeni
+
+const input = document.getElementById("race-id-input");
+
+//POTVRZENÍ ZADÁNÍ ČÍSLA ZÁVODU AUTOMATICKY BEZ TLAČÍTKA
+/*input.addEventListener("input", () => {
+  if (input.value.length === 5) {
+    saveRaceId();
+  }
+});*/
+
+function getRaceId() {
+  return localStorage.getItem('rally_race_id') || "";
+}
+const raceId = getRaceId();
+
+//DNF 
+function parsePenalty(code) {
+  if (!code) return { time: 0, dnf: false };
+
+  code = code.trim().toUpperCase();
+
+  // 🚨 DNF
+  if (code === "DNF") {
+    return { time: 0, dnf: true };
+  }
+
+  // ➕ odstranění "+"
+  if (code.startsWith("+")) {
+    code = code.substring(1);
+  }
+
+  // ⏱ sekundy (výchozí)
+  if (!isNaN(code)) {
+    return { time: parseInt(code) * 1000, dnf: false };
+  }
+
+  // ⏱ "10S"
+  if (code.endsWith("S")) {
+    return { time: parseInt(code) * 1000, dnf: false };
+  }
+
+  // ⏱ "1M"
+  if (code.endsWith("M")) {
+    return { time: parseInt(code) * 60000, dnf: false };
+  }
+
+  return { time: 0, dnf: false };
 }
 
 
 async function loadResults() {
-  const btn = document.querySelector("#view-results button");
 
-  btn.textContent = "Načítám...";
-  btn.disabled = true;
+  const stage = parseInt(document.getElementById("stage-select").value);
+  const raceId = getRaceId();
 
-  try {
-    // 1️⃣ načtení logů ze Supabase
-    const { data: logs, error } = await supabaseClient
-      .from("rally_logs")
-      .select("*")
-      .eq("race_id", currentRaceId);
-
-    if (error) throw error;
-
-    if (!logs || logs.length === 0) {
-      alert("Žádná data pro tento závod.");
-      return;
-    }
-
-    // 2️⃣ výpočet výsledků
-    const results = computeResults(logs);
-
-    console.log("RESULTS:", results);
-
-    // 3️⃣ vykreslení
-    renderResults(results);
-
-    btn.textContent = "✅ Hotovo";
-  } catch (err) {
-    console.error("Chyba:", err);
-    alert("Chyba při načítání výsledků: " + err.message);
-    btn.textContent = "❌ Chyba";
+  if (!raceId) {
+    alert("Není nastaveno Race ID");
+    return;
   }
 
-  setTimeout(() => {
-    btn.textContent = "🔄 Načíst výsledky";
-    btn.disabled = false;
-  }, 2000);
-}
+  // 1️⃣ logy
+  const { data: logs, error } = await supabaseClient
+    .from("rally_logs")
+    .select("*")
+    .eq("race_id", raceId)
+    .eq("stage", stage);
 
-function renderResults(results) {
-  const table = document.getElementById("results-table");
-  const thead = table.querySelector("thead");
-  const tbody = table.querySelector("tbody");
+  if (error) {
+    console.error(error);
+    alert("Chyba při načítání logů");
+    return;
+  }
 
-  // 🧠 zjisti všechny RZ
-  const stagesSet = new Set();
+  // 2️⃣ riders
+  const { data: riders } = await supabaseClient
+    .from("riders")
+    .select("*")
+    .eq("race_id", raceId);
 
-  results.forEach(r => {
-    Object.keys(r.stages).forEach(s => stagesSet.add(s));
+  const ridersMap = {};
+  riders.forEach(r => {
+    ridersMap[r.rider_number] = r;
+
   });
 
-  const stages = Array.from(stagesSet).sort((a, b) => a - b);
+  // 3️⃣ výpočet
+ const map = {};
 
-  // ===== HEADER =====
-  thead.innerHTML = `
-    <tr>
-      <th>#</th>
-      <th>Jezdec</th>
-      ${stages.map(s => `<th>RZ${s}</th>`).join("")}
-      <th>Celkem</th>
-    </tr>
-  `;
+logs.forEach(log => {
+  const rider = String(log.rider);
+  if (!rider) return;
 
-  // ===== BODY =====
+  if (!map[rider]) {
+    map[rider] = {
+      rider,
+      start: null,
+      finish: null,
+      penalty: 0,
+      dnf: false
+    };
+  }
+
+  if (log.type === "START") {
+    map[rider].start = log.time_ms;
+  }
+
+  if (log.type === "FINISH") {
+    map[rider].finish = log.time_ms;
+
+    if (log.penalty) {
+      const p = parsePenalty(log.penalty);
+
+      map[rider].penalty += p.time;
+
+      if (p.dnf) {
+        map[rider].dnf = true;
+      }
+    }
+  }
+});
+
+  // 4️⃣ výsledky
+  let results = Object.values(map).map(r => {
+
+   if (!r.start || !r.finish || r.dnf) {
+  return {
+    rider: r.rider,
+    dnf: true
+  };
+}
+
+    return {
+      rider: r.rider,
+      time: r.finish - r.start + r.penalty,
+      penalty: r.penalty,
+      dnf: false
+    };
+  });
+
+  // 5️⃣ třídění
+  const classified = results
+    .filter(r => !r.dnf)
+    .sort((a, b) => a.time - b.time);
+
+  const dnf = results.filter(r => r.dnf);
+
+  // 6️⃣ pořadí
+  classified.forEach((r, i) => {
+    r.position = i + 1;
+    r.gap = i === 0 ? 0 : r.time - classified[0].time;
+  });
+
+  // 7️⃣ final
+  const finalResults = [...classified, ...dnf];
+
+  renderResults(finalResults, ridersMap);
+}
+
+//výsledky format
+function formatMs(ms) {
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  const msPart = Math.floor(ms % 1000);
+
+  return `${m}:${String(s).padStart(2, "0")}.${String(msPart).padStart(3, "0")}`;
+}
+
+function renderResults(results, ridersMap) {
+  const tbody = document.querySelector("#results-table tbody");
   tbody.innerHTML = "";
 
-  results.forEach((r, index) => {
+  results.forEach(r => {
+    const rider = ridersMap[r.rider] || {};
+
     const tr = document.createElement("tr");
 
-    const stageCells = stages.map(s => {
-      const stage = r.stages[s];
-      if (!stage || !stage.time) return "<td>-</td>";
-      return `<td>${formatStageTime(stage.time)}</td>`;
-    }).join("");
+   tr.innerHTML = `
+  <td>${r.dnf ? "DNF" : r.position}</td>
+  <td>#${r.rider}</td>
+  <td>${rider.name || "-"}</td>
+  <td>${(rider.car_brand || "") + " " + (rider.car_model || "")}</td>
+  <td>${rider.category || "-"}</td>
+  <td>${r.dnf ? "-" : formatMs(r.time)}</td>
+  <td>${r.dnf || r.position === 1 ? "-" : "+" + formatMs(r.gap)}</td>
+  <td>${r.penalty ? formatMs(r.penalty) : "-"}</td>
+`;
 
-    tr.innerHTML = `
-      <td>${r.dnf ? "DNF" : index + 1}</td>
-      <td>#${r.rider}</td>
-      ${stageCells}
-      <td>${r.dnf ? "DNF" : formatStageTime(r.totalTime)}</td>
-    `;
+if (r.dnf) {
+  tr.style.background = "#330000";
+  tr.style.color = "#ff5555";
+}
 
     tbody.appendChild(tr);
   });
+
 }
+
 
 function formatStageTime(ms) {
   if (!ms) return "-";
@@ -123,14 +225,19 @@ function showView(id) {
 
 function saveRaceId() {
   const val = document.getElementById('race-id-input').value;
+
   localStorage.setItem('rally_race_id', val);
+
   currentRaceId = val;
+  window.APP.raceId = val;
+
+  loadRiders();
 }
 
 /*********************************
  * ADMIN - RIDERS
  *********************************/
-let riders = [];
+
 
 async function addRider() {
   if (!window.APP.raceId) {
@@ -138,16 +245,21 @@ async function addRider() {
     return;
   }
 
-  const rider = {
-    race_id: window.APP.raceId,
-    rider_number: document.getElementById('rider-number').value,
-    name: document.getElementById('rider-name').value,
-    co_driver: document.getElementById('co-driver').value,
-    nationality: document.getElementById('nationality').value,
-    car_brand: document.getElementById('car-brand').value,
-    car_model: document.getElementById('car-model').value,
-    category: document.getElementById('category').value
-  };
+const rider = {
+  race_id: window.APP.raceId,
+  rider_number: document.getElementById('rider-number').value,
+  name: document.getElementById('rider-name').value,
+  co_driver: document.getElementById('co-driver').value,
+  nationality: document.getElementById('nationality').value,
+  car_brand: document.getElementById('car-brand').value,
+  car_model: document.getElementById('car-model').value,
+  category: document.getElementById('category').value,
+  team: document.getElementById('team').value
+};
+
+if (editingRiderId) {
+  rider.id = editingRiderId;
+}
 
   const { error } = await window.supabaseClient
   .from("riders")
@@ -161,6 +273,15 @@ async function addRider() {
 
   clearRiderForm();
   loadRiders();
+
+  editingRiderId = null;
+
+const btn = document.getElementById("save-rider-btn");
+
+if (btn) {
+  btn.textContent = "➕ Přidat jezdce";
+  btn.style.background = "";
+  }
 }
 
 function clearRiderForm() {
@@ -171,45 +292,81 @@ function clearRiderForm() {
   document.getElementById('car-brand').value = "";
   document.getElementById('car-model').value = "";
   document.getElementById('category').value = "";
+  document.getElementById('team').value = "";
 }
 
-async function loadRiders() {
-  if (!window.APP.raceId) return;
 
-  const { data, error } = await window.supabaseClient
-    .from("riders")
-    .select("*")
-    .eq("race_id", window.APP.raceId)
-    .order("rider_number", { ascending: true });
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  renderRiders(data);
-}
 
 function renderRiders(riders) {
   const tbody = document.querySelector("#riders-table tbody");
+  const status = document.getElementById("riders-status");
+
+  if (!tbody) {
+    console.error("❌ Nenalezen #riders-table tbody");
+    return;
+  }
+
   tbody.innerHTML = "";
 
+  // 🔥 STATUS
+  if (status) {
+    if (riders.length === 0) {
+      status.textContent = "Žádní jezdci pro tento závod";
+      status.style.color = "#f55";
+    } else {
+      status.textContent = `Načteno ${riders.length} jezdců`;
+      status.style.color = "#0f0";
+    }
+  }
+
+  if (!status) {
+  console.warn("⚠️ Nenalezen #riders-status");
+}
+//tabulka v Administraci - zobrazeni info k registraci
+//<td>${r.co_driver_nationality || ""}</td>
   riders.forEach(r => {
     const tr = document.createElement("tr");
 
+tr.style.cursor = "pointer";
+tr.onclick = () => editRider(r);
+
     tr.innerHTML = `
-      <td>${r.rider_number}</td>
-      <td>${r.name}</td>
-      <td>${r.co_driver || ""}</td>
-      <td>${r.car_brand || ""} ${r.car_model || ""}</td>
-      <td>${r.category || ""}</td>
-      <td>
-        <button onclick="deleteRider(${r.id})">❌</button>
-      </td>
-    `;
+  <td>${r.rider_number || ""}</td>
+  <td>${r.name || ""}</td>
+  <td>${r.nationality || ""}</td>
+  <td>${r.co_driver || ""}</td>
+  <td>${r.car_brand || ""} ${r.car_model || ""}</td>
+  <td>${r.category || ""}</td>
+  <td>${r.team || ""}</td>
+  <td>
+  <button onclick="deleteRider(${r.id})">❌</button>
+  </td>
+`;
+
 
     tbody.appendChild(tr);
   });
+}
+
+function editRider(rider) {
+
+  editingRiderId = rider.id;
+
+  document.getElementById("rider-number").value = rider.rider_number || "";
+  document.getElementById("rider-name").value = rider.name || "";
+  document.getElementById("nationality").value = rider.nationality || "";
+  document.getElementById("co-driver").value = rider.co_driver || "";
+  document.getElementById("car-brand").value = rider.car_brand || "";
+  document.getElementById("car-model").value = rider.car_model || "";
+  document.getElementById("category").value = rider.category || "";
+  document.getElementById("team").value = rider.team || "";
+
+  const btn = document.getElementById("save-rider-btn");
+
+  if (btn) {
+    btn.textContent = "💾 Uložit změny";
+    btn.style.background = "#664400";
+  }
 }
 
 async function deleteRider(id) {
@@ -227,6 +384,27 @@ async function deleteRider(id) {
   }
 
   loadRiders();
+}
+
+async function loadRiders() {
+  if (!currentRaceId) {
+    console.warn("Chybí race_id");
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("riders")
+    .select("*")
+    .eq("race_id", currentRaceId)
+    .order("rider_number", { ascending: true });
+
+  if (error) {
+    console.error("Chyba při načítání riders:", error);
+    alert("Nepodařilo se načíst startovní listinu");
+    return;
+  }
+
+  renderRiders(data);
 }
 
 
@@ -382,114 +560,17 @@ function getRaceId() {
 
 
 //výpočet výsledů
-function computeResults(logs) {
-  const ridersMap = {};
 
-  // 1️⃣ seskupení podle jezdec + RZ
-  logs.forEach(log => {
-    if (!log.rider) return;
-
-    const rider = log.rider;
-    const stage = log.stage;
-
-    if (!ridersMap[rider]) {
-      ridersMap[rider] = {
-        rider: rider,
-        stages: {},
-        totalTime: 0,
-        totalPenalty: 0,
-        dnf: false
-      };
-    }
-
-    if (!ridersMap[rider].stages[stage]) {
-      ridersMap[rider].stages[stage] = {
-        starts: [],
-        finishes: [],
-        penalty: 0,
-        rawPenalty: ""
-      };
-    }
-
-    const stageObj = ridersMap[rider].stages[stage];
-
-    if (log.type === "START") {
-      stageObj.starts.push(log.time_ms);
-    }
-
-    if (log.type === "FINISH") {
-      stageObj.finishes.push(log.time_ms);
-
-      // penalizace bereme z FINISH logu
-      if (log.penalty) {
-        stageObj.rawPenalty = log.penalty;
-
-        if (log.penalty.toUpperCase() === "DNF") {
-          ridersMap[rider].dnf = true;
-        }
-
-        // časová penalizace např. "+10"
-        if (log.penalty.startsWith("+")) {
-          const val = parseInt(log.penalty.replace("+", ""));
-          if (!isNaN(val)) {
-            stageObj.penalty = val * 1000; // převod na ms
-          }
-        }
-      }
-    }
-  });
-
-  // 2️⃣ výpočet časů
-  const results = [];
-
-  Object.values(ridersMap).forEach(r => {
-    let total = 0;
-    let totalPenalty = 0;
-
-    Object.entries(r.stages).forEach(([stage, s]) => {
-      if (s.starts.length === 0 || s.finishes.length === 0) {
-        r.dnf = true;
-        return;
-      }
-
-      // první START, poslední FINISH
-      const start = Math.min(...s.starts);
-      const finish = Math.max(...s.finishes);
-
-      let stageTime = finish - start;
-
-      // přičti penalizaci
-      stageTime += s.penalty;
-
-      s.time = stageTime;
-      s.start = start;
-      s.finish = finish;
-
-      total += stageTime;
-      totalPenalty += s.penalty;
-    });
-
-    r.totalTime = total;
-    r.totalPenalty = totalPenalty;
-
-    results.push(r);
-  });
-
-  // 3️⃣ seřazení
-  results.sort((a, b) => {
-    if (a.dnf && !b.dnf) return 1;
-    if (!a.dnf && b.dnf) return -1;
-    return a.totalTime - b.totalTime;
-  });
-
-  return results;
-}
 
 
 
 //---------------
 
 document.addEventListener("DOMContentLoaded", () => {
+
+  currentRaceId = getRaceId();
+  window.APP.raceId = currentRaceId;
+
   loadRiders();
 });
 

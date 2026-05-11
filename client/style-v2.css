@@ -1,0 +1,210 @@
+
+:root {
+    --bg-main: #0a0c0e;
+    --bg-surface: #161b22;
+    --bg-accent: #21262d;
+    --primary: #00f2ff;    /* Rally Cyan */
+    --secondary: #00ff41;  /* Racing Green */
+    --danger: #ff3e3e;     /* Warning Red */
+    --warning: #ffcc00;    /* Caution Yellow */
+    --text-main: #f0f6fc;
+    --text-dim: #8b949e;
+    --font-mono: 'JetBrains Mono', 'Roboto Mono', monospace;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    padding-bottom: 60px; /* Space for bottom content */
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+
+.view {
+    display: none; /* Schová všechny sekce */
+    padding: 20px;
+}
+
+.view.active {
+    display: block; /* Ukáže jen tu vybranou */
+}
+
+/* --- HEADER & NAVIGATION --- */
+header, .nav-bar {
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--bg-accent);
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.tab-btn, button {
+    background: var(--bg-accent);
+    border: 1px solid #30363d;
+    color: var(--text-main);
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+button:active {
+    transform: scale(0.96);
+}
+
+.tab-btn.active {
+    border-color: var(--primary);
+    background: rgba(0, 242, 255, 0.1);
+    color: var(--primary);
+}
+
+/* --- CLOCK & TIMING --- */
+#central-clock {
+    font-family: var(--font-mono);
+    font-size: clamp(2.5rem, 10vw, 4rem);
+    font-weight: 700;
+    text-align: center;
+    margin: 20px 0;
+    color: #fff;
+    text-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+}
+
+.countdown {
+    font-family: var(--font-mono);
+    font-size: clamp(3.5rem, 15vw, 6rem);
+    font-weight: 800;
+    text-align: center;
+    padding: 20px;
+    margin: 10px auto;
+    width: fit-content;
+    border-radius: 20px;
+    color: var(--warning);
+}
+
+.countdown.go {
+    color: var(--secondary);
+    animation: pulse-green 0.5s infinite alternate;
+}
+
+@keyframes pulse-green {
+    from { text-shadow: 0 0 10px var(--secondary); opacity: 0.8; }
+    to { text-shadow: 0 0 30px var(--secondary); opacity: 1; }
+}
+
+/* --- LARGE ACTION BUTTONS (The "Rally" Buttons) --- */
+#startBtn, #finishBtn {
+    width: calc(100% - 40px);
+    height: 120px;
+    max-height: 25vh;
+    margin: 20px auto;
+    display: block;
+    font-size: 2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.4);
+    position: relative;
+    cursor: pointer;
+}
+
+#startBtn {
+    background: linear-gradient(145deg, #00d135, #008f24);
+    color: #fff;
+}
+
+#finishBtn {
+    background: linear-gradient(145deg, #ff4b4b, #b90000);
+    color: #fff;
+}
+
+#startBtn:active, #finishBtn:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.4);
+}
+
+/* --- SETUP & CARDS --- */
+.setup-item, .rider-card, .view {
+    background: var(--bg-surface);
+    border: 1px solid var(--bg-accent);
+    border-radius: 16px;
+    margin: 15px;
+    padding: 20px;
+}
+
+.setup-item label {
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+input[type="number"], input[type="text"], select {
+    background: var(--bg-main);
+    border: 1px solid var(--bg-accent);
+    color: #fff;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 8px;
+}
+
+/* --- LOGS & TABLES --- */
+#log-container, table {
+    width: 100%;
+    margin-top: 15px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+table { border-collapse: collapse; }
+
+th {
+    background: var(--bg-accent);
+    color: var(--text-dim);
+    padding: 12px;
+    text-align: left;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid var(--bg-accent);
+    font-family: var(--font-mono);
+}
+
+.log-entry {
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--bg-accent);
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* --- MOBILE KEYPAD --- */
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 350px;
+    margin: 20px auto;
+}
+
+.keypad button {
+    height: 65px;
+    border-radius: 12px;
+    font-size: 1.5rem;
+    background: var(--bg-accent);
+}
