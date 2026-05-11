@@ -246,8 +246,6 @@ async function addRider() {
   }
 
 const rider = {
-  id: editingRiderId || undefined,
-
   race_id: window.APP.raceId,
   rider_number: document.getElementById('rider-number').value,
   name: document.getElementById('rider-name').value,
@@ -258,6 +256,10 @@ const rider = {
   category: document.getElementById('category').value,
   team: document.getElementById('team').value
 };
+
+if (editingRiderId) {
+  rider.id = editingRiderId;
+}
 
   const { error } = await window.supabaseClient
   .from("riders")
