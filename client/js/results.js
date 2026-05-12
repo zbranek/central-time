@@ -16,6 +16,8 @@ function saveRaceId() {
 
   localStorage.setItem("rally_race_id", val);
 
+  loadStages();
+
 }
 
 
@@ -64,7 +66,57 @@ document.addEventListener("DOMContentLoaded", () => {
       raceId;
   }
 
+  loadStages();
+
 });
+
+//nahravani výsledků automat po změně stage
+async function loadStages() {
+
+  const raceId = getRaceId();
+
+  if (!raceId) {
+    console.warn("Chybí Race ID");
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("stages")
+    .select("*")
+    .eq("race_id", raceId)
+    .eq("status", "stage")
+    .order("stage_number", { ascending: true });
+
+  if (error) {
+    console.error("Chyba načítání stages:", error);
+    return;
+  }
+
+  const select =
+    document.getElementById("stage-select");
+
+  select.innerHTML = "";
+
+  data.forEach(stage => {
+
+    const option =
+      document.createElement("option");
+
+    option.value = stage.stage_number;
+
+    option.textContent =
+      `RZ${stage.stage_number} - ${stage.name}`;
+
+    select.appendChild(option);
+
+  });
+
+  if (data.length > 0) {
+  select.value = data[0].stage_number;
+  loadResults();
+}
+
+}
 
 async function loadResults() {
 
@@ -184,16 +236,46 @@ function renderResults(results, ridersMap) {
 
     const tr = document.createElement("tr");
 
-   tr.innerHTML = `
-  <td>${r.dnf ? "DNF" : r.position}</td>
+
+//nový vizual, může rozbít výsledky v Admin sekci  - když tak použít ze zálohy 
+tr.innerHTML = `
+  <td class="pos">${r.dnf ? "DNF" : r.position}</td>
+
   <td>#${r.rider}</td>
-  <td>${rider.name || "-"}</td>
-  <td>${(rider.car_brand || "") + " " + (rider.car_model || "")}</td>
+
+  <td>
+  <div class="driver-name">
+    ${rider.name || "-"}
+  </div>
+
+  <div class="crew-name">
+    ${rider.co_driver || ""}
+  </div>
+</td>
+
+  <td>
+    ${(rider.car_brand || "")}
+    ${(rider.car_model || "")}
+  </td>
+
   <td>${rider.category || "-"}</td>
-  <td>${r.dnf ? "-" : formatMs(r.time)}</td>
-  <td>${r.dnf || r.position === 1 ? "-" : "+" + formatMs(r.gap)}</td>
-  <td>${r.penalty ? formatMs(r.penalty) : "-"}</td>
+
+  <td class="time">
+    ${r.dnf ? "-" : formatMs(r.time)}
+  </td>
+
+  <td class="gap">
+    ${r.dnf || r.position === 1
+      ? "-"
+      : "+" + formatMs(r.gap)}
+  </td>
 `;
+
+if (r.position === 1) tr.classList.add("gold");
+if (r.position === 2) tr.classList.add("silver");
+if (r.position === 3) tr.classList.add("bronze");
+
+if (r.dnf) tr.classList.add("dnf");
 
 if (r.dnf) {
   tr.style.background = "#330000";

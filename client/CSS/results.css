@@ -1,0 +1,192 @@
+body {
+  margin: 0;
+  padding: 0;
+  background: #111;
+  color: #fff;
+  font-family: Arial, sans-serif;
+}
+
+/* HEADER */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  background: #000;
+
+  padding: 10px;
+
+  border-bottom: 2px solid #222;
+
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+/*race title*/
+
+.race-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #0f0;
+
+  margin-bottom: 10px;
+}
+
+/* SELECT + BUTTON */
+
+.controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.controls input,
+.controls select,
+.controls button {
+  flex: 1;
+}
+
+select,
+button,
+input {
+  background: #1a1a1a;
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 8px;
+
+  padding: 10px;
+  font-size: 1rem;
+}
+
+button {
+  background: #004400;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #006600;
+}
+
+/* TABLE */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+
+  margin-top: 10px;
+}
+
+thead {
+  position: sticky;
+  top: 90px;   /*nutno vyladit podle vizualu*/
+
+  background: #181818;
+
+  z-index: 900;
+}
+
+th {
+  padding: 12px 8px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: #999;
+
+  border-bottom: 2px solid #333;
+}
+
+td {
+  padding: 14px 8px;
+  border-bottom: 1px solid #222;
+
+  font-size: 1rem;
+}
+
+/* ZEBRA */
+
+tbody tr:nth-child(even) {
+  background: #161616;
+}
+
+/* HOVER */
+
+tbody tr:hover {
+  background: #222;
+}
+
+/* TOP 3 */
+
+.gold {
+  background: #3a3200 !important;
+}
+
+.silver {
+  background: #2a2a2a !important;
+}
+
+.bronze {
+  background: #2d1c00 !important;
+}
+
+/* DNF */
+
+.dnf {
+  background: #330000 !important;
+  color: #ff6666;
+  opacity: 0.85;
+}
+
+/* POSITION */
+
+.pos {
+  font-weight: bold;
+  width: 50px;
+}
+
+/* DRIVER */
+
+.driver {
+  font-weight: bold;
+  color: #fff;
+}
+
+.driver-name {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.crew-name {
+  font-size: 0.8rem;
+  color: #999;
+  margin-top: 2px;
+}
+
+/* TIME */
+
+.time {
+  font-family: monospace;
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+
+/* GAP */
+
+.gap {
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+  th,
+  td {
+    padding: 10px 4px;
+    font-size: 0.85rem;
+  }
+
+  .time {
+    font-size: 0.95rem;
+  }
+
+}

@@ -16,7 +16,7 @@ const input = document.getElementById("race-id-input");
   }
 });*/
 
-const raceId = getRaceId();
+//const raceId = getRaceId();
 
 
 
