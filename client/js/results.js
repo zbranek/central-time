@@ -11,13 +11,24 @@ function formatMs(ms) {
 
 function saveRaceId() {
 
-  const val =
-    document.getElementById("race-id-input").value;
+  console.log("SAVE CLICK");
+  
+  const val = document.getElementById("race-id-input").value;
+
+  
+   console.log("VALUE:", val);
 
   localStorage.setItem("rally_race_id", val);
 
+  // 🔥 reload stages
   loadStages();
 
+  // 🔥 vyčistit tabulku výsledků
+  const tbody = document.querySelector("#results-table tbody");
+
+  if (tbody) {
+    tbody.innerHTML = "";
+  }
 }
 
 
@@ -66,9 +77,13 @@ document.addEventListener("DOMContentLoaded", () => {
       raceId;
   }
 
+  
+
   loadStages();
 
 });
+
+
 
 //nahravani výsledků automat po změně stage
 async function loadStages() {
@@ -92,10 +107,33 @@ async function loadStages() {
     return;
   }
 
+  //console.log("STAGES", raceId, data);
+
   const select =
     document.getElementById("stage-select");
 
   select.innerHTML = "";
+
+  if (data.length === 0) {
+
+  select.innerHTML =
+    `<option>Žádné RZ</option>`;
+
+  const tbody =
+    document.querySelector("#results-table tbody");
+
+  if (tbody) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8">
+          Pro tento závod nejsou vytvořeny RZ
+        </td>
+      </tr>
+    `;
+  }
+
+  return;
+}
 
   data.forEach(stage => {
 
@@ -115,7 +153,6 @@ async function loadStages() {
   select.value = data[0].stage_number;
   loadResults();
 }
-
 }
 
 async function loadResults() {
