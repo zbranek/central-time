@@ -386,6 +386,60 @@ async function deleteRider(id) {
   loadRiders();
 }
 
+async function importCSV() {
+
+  const file = document.getElementById("csv-file").files[0];
+
+  if (!file) {
+    alert("Vyber CSV soubor");
+    return;
+  }
+
+  const text = await file.text();
+
+  const lines = text.split("\n");
+
+  const riders = [];
+
+  // první řádek = hlavička
+  lines.slice(1).forEach(line => {
+
+    if (!line.trim()) return;
+
+    const cols = line.split(";");
+
+    riders.push({
+      race_id: window.APP.raceId,
+
+      rider_number: cols[0]?.trim(),
+      name: cols[1]?.trim(),
+      nationality: cols[2]?.trim(),
+      co_driver: cols[3]?.trim(),
+      car_brand: cols[4]?.trim(),
+      car_model: cols[5]?.trim(),
+      category: cols[6]?.trim(),
+      team: cols[7]?.trim()
+    });
+  });
+
+  const { error } = await window.supabaseClient
+    .from("riders")
+    .upsert(riders, {
+      onConflict: "race_id,rider_number"
+    });
+
+  if (error) {
+    console.error(error);
+    alert("Chyba při importu CSV");
+    return;
+  }
+
+  alert(`Importováno ${riders.length} jezdců`);
+
+  loadRiders();
+}
+
+
 async function loadRiders() {
   if (!currentRaceId) {
     console.warn("Chybí race_id");

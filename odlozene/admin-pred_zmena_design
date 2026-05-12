@@ -78,6 +78,36 @@
     th {
       background: #222;
     }
+
+
+    .race-setup {
+  padding: 15px;
+  margin: 10px;
+  border: 2px solid #006600;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.race-setup input {
+  width: 100%;
+  font-size: 2.5rem;      /* 🔥 velké čísla */
+  text-align: center;
+  padding: 10px;
+  margin: 10px 0;
+  background: #222;
+  color: #0f0;
+  border: 1px solid #0f0;
+  letter-spacing: 0.3em;  /* mezery mezi čísly */
+}
+
+.race-setup button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.2rem;
+  background: #004400;
+  color: #0f0;
+  border: 1px solid #0f0;
+}
   </style>
 </head>
 
@@ -87,9 +117,25 @@
   <button class="tab-btn active" onclick="showView('admin')">ADMINISTRACE</button>
   <button class="tab-btn" onclick="showView('itinerary')">ITINERÁŘ</button>
   <button class="tab-btn" onclick="showView('results')">VÝSLEDKY</button>
-  <input id="race-id-input" placeholder="ID závodu (5 číslic)">
-<button onclick="saveRaceId()">Uložit</button>
+  
 </header>
+
+<div class="race-setup">
+  <label>ID ZÁVODU</label>
+  
+  <input 
+     type="text"
+    id="race-id-input"
+    maxlength="5"
+    inputmode="numeric"
+    pattern="[0-9]*"
+    placeholder="12345"
+  >
+
+  <button onclick="saveRaceId()">✅ Potvrdit</button>
+</div>
+
+</div>
 
 <!-- ================= ADMINISTRACE ================= -->
 <div id="view-admin" class="view active">
@@ -98,27 +144,81 @@
 
   <input id="rider-number" placeholder="Číslo jezdce">
   <input id="rider-name" placeholder="Jméno a příjmení">
-  <input id="co-driver" placeholder="Spolujezdec">
+  <input id="co-driver" placeholder="Jezdec/Spolujezdec">
   <input id="nationality" placeholder="Národnost">
   <input id="car-brand" placeholder="Značka">
   <input id="car-model" placeholder="Model">
   <input id="category" placeholder="Kategorie">
+  <input id="team" placeholder="Team">
+  
 
-  <button onclick="addRider()">➕ Přidat jezdce</button>
+  <div id="riders-status" style="margin:10px 0; font-size:0.9rem;"></div>
+
+  <button id="save-rider-btn" onclick="addRider()">
+  ➕ Přidat jezdce
+</button>
+
+<div style="margin-bottom:15px;">
+  <input type="file" id="csv-file" accept=".csv">
+
+  <button onclick="importCSV()">
+    📥 Import CSV Napr.: Číslo;Závodník;Nár-Nár;Řidič-Spolujezdec;Značka;Model;Kategorie;Team
+  </button>
+</div>
+
+  <!--
+  <section id="view-admin" class="view active">-->
+
+  <!-- 🔥 ID ZÁVODU -->
+  <!--
+  <div class="race-setup">
+    
+    <div id="race-id-status"></div>
+
+    <div id="race-id-display" style="font-size:3rem; letter-spacing:0.3em;">
+      -----
+    </div>
+
+    <div class="keypad">
+      <button onclick="pressRaceNum(1)">1</button>
+      <button onclick="pressRaceNum(2)">2</button>
+      <button onclick="pressRaceNum(3)">3</button>
+
+      <button onclick="pressRaceNum(4)">4</button>
+      <button onclick="pressRaceNum(5)">5</button>
+      <button onclick="pressRaceNum(6)">6</button>
+
+      <button onclick="pressRaceNum(7)">7</button>
+      <button onclick="pressRaceNum(8)">8</button>
+      <button onclick="pressRaceNum(9)">9</button>
+
+      <button onclick="clearRaceId()" style="color:red;">C</button>
+      <button onclick="pressRaceNum(0)">0</button>
+      <button onclick="saveRaceId()" style="background:#060;color:#fff;">OK</button>
+    </div>
+
+  </div>  -->
+  
 
   <table id="riders-table">
     <thead>
       <tr>
         <th>#</th>
-        <th>Jméno</th>
-        <th>Spolujezdec</th>
-        <th>Auto</th>
-        <th>Kategorie</th>
-        <th></th>
+    <th>Jezdec</th>
+    <th>Národnost</th>
+    <th>Spolujezdec</th>
+    <th>Auto</th>
+    <th>Kategorie</th>
+    <th>Tým</th>
+    <th>Chip</th>
+    <th>❌</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
+
+  <div id="riders-list"></div>
+  <div id="riders-status">Načítám...</div>
 
 </div>
 
@@ -155,28 +255,38 @@
 <!-- ================= VÝSLEDKY ================= -->
 <div id="view-results" class="view">
 
-  <h2>Výsledky</h2>
+<h2>Výsledky</h2>
 
-  <button onclick="loadResults()">🔄 Načíst výsledky</button>
+<select id="stage-select">
+  <option value="1">RZ1</option>
+  <option value="2">RZ2</option>
+  <option value="3">RZ3</option>
+</select>
 
-  <table id="results-table">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Jezdec</th>
-        <th>RZ</th>
-        <th>Čas</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<button onclick="loadResults()">🔄 Načíst výsledky</button>
+
+<table id="results-table">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Start. číslo</th>
+      <th>Jezdec</th>
+      <th>Auto</th>
+      <th>Kategorie</th>
+      <th>Čas</th>
+      <th>Ztráta</th>
+      <th>Penalizace</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-<script src="../js/supabase.js"></script>
-<script src="../js/admin.js"></script>
+<script src="./js/supabase.js"></script>
+<script src="./js/admin.js"></script>
 
 </body>
 </html>
