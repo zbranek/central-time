@@ -538,7 +538,7 @@ async function connectArduino() {
     port = await navigator.serial.requestPort();
     await port.open({ baudRate: 115200 });
 
-    console.log("Arduino připojeno");
+    console.log("Brana - připojeno");
 
     reader = port.readable.getReader();
     readSerialLoop();
@@ -745,7 +745,7 @@ if (error) throw error;
   }
 
   setTimeout(() => {
-    btn.textContent = "📤 Odeslat logy do Supabase";
+    btn.textContent = "📤 Odeslat logy na server";
     btn.style.background = "#003366";
     btn.disabled = false;
   }, 3000);

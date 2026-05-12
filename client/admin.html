@@ -158,6 +158,14 @@
   ➕ Přidat jezdce
 </button>
 
+<div style="margin-bottom:15px;">
+  <input type="file" id="csv-file" accept=".csv">
+
+  <button onclick="importCSV()">
+    📥 Import CSV Napr.: Číslo;Závodník;Nár-Nár;Řidič-Spolujezdec;Značka;Model;Kategorie;Team
+  </button>
+</div>
+
   <!--
   <section id="view-admin" class="view active">-->
 
@@ -278,7 +286,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script src="./js/supabase.js"></script>
+<script src="./js/common.js"></script>
 <script src="./js/admin.js"></script>
+<script src="./js/results.js"></script>
 
 </body>
 </html>

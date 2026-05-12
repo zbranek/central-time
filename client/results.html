@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Rally Results</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+<h1>Výsledky</h1>
+
+<body>
+
+<div class="topbar">
+
+  <input
+    id="race-id-input"
+    placeholder="Race ID"
+  >
+
+  <button onclick="saveRaceId()">
+    Načíst závod
+  </button>
+
+  <select id="stage-select">
+    <option value="1">RZ1</option>
+    <option value="2">RZ2</option>
+    <option value="3">RZ3</option>
+  </select>
+
+  <button onclick="loadResults()">
+    Výsledky
+  </button>
+
+</div>
+
+<table id="results-table">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Jezdec</th>
+      <th>Auto</th>
+      <th>Čas</th>
+      <th>Ztráta</th>
+    </tr>
+  </thead>
+
+  <tbody></tbody>
+</table>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<script src="./js/common.js"></script>
+<script src="./js/supabase.js"></script>
+<script src="./js/results.js"></script>
