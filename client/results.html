@@ -2,8 +2,12 @@
 <html lang="cs">
 <head>
   <meta charset="UTF-8">
-  <title>Rally Results</title>
+  <title>Results</title>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="./css/results.css">
+</head>
 
 
 
@@ -13,24 +17,26 @@
 
 <div class="topbar">
 
-  <input
-    id="race-id-input"
-    placeholder="Race ID"
-  >
+  <div class="race-title">
+    RALLY RESULTS
+  </div>
 
-  <button onclick="saveRaceId()">
-    Načíst závod
-  </button>
+  <div class="controls">
 
-  <select id="stage-select">
-    <option value="1">RZ1</option>
-    <option value="2">RZ2</option>
-    <option value="3">RZ3</option>
-  </select>
+    <input
+      id="race-id-input"
+      placeholder="Race ID"
+    >
 
-  <button onclick="loadResults()">
-    Výsledky
-  </button>
+    <select id="stage-select">
+      <option value="1">RZ1</option>
+    </select>
+
+    <button onclick="loadResults()">
+      🔄 Načíst
+    </button>
+
+  </div>
 
 </div>
 
