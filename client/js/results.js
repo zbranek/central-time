@@ -12,7 +12,7 @@ function formatMs(ms) {
 function saveRaceId() {
 
   console.log("SAVE CLICK");
-  
+
   const val = document.getElementById("race-id-input").value;
 
   
@@ -261,6 +261,7 @@ logs.forEach(log => {
   const finalResults = [...classified, ...dnf];
 
   renderResults(finalResults, ridersMap);
+  renderOverallResults(finalResults, ridersMap);
 }
 
 
@@ -280,22 +281,23 @@ tr.innerHTML = `
 
   <td>#${r.rider}</td>
 
-  <td>
-  <div class="driver-name">
-    ${rider.name || "-"}
+<td class="crew-cell">
+
+  <div class="crew-driver">
+    #${r.rider} ${rider.name || "-"}
   </div>
 
-  <div class="crew-name">
+  <div class="crew-codriver">
     ${rider.co_driver || ""}
   </div>
-</td>
 
-  <td>
+  <div class="crew-car">
     ${(rider.car_brand || "")}
     ${(rider.car_model || "")}
-  </td>
+    ${rider.category ? " • " + rider.category : ""}
+  </div>
 
-  <td>${rider.category || "-"}</td>
+</td>
 
   <td class="time">
     ${r.dnf ? "-" : formatMs(r.time)}
@@ -320,6 +322,63 @@ if (r.dnf) {
 }
 
     tbody.appendChild(tr);
+  });
+
+}
+
+
+//overall výsledky pro pravou část tabulky   
+function renderOverallResults(results, ridersMap) {
+
+  const tbody =
+    document.querySelector(
+      "#overall-results-table tbody"
+    );
+
+  tbody.innerHTML = "";
+
+  results.forEach(r => {
+
+    const rider =
+      ridersMap[r.rider] || {};
+
+    const tr =
+      document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${r.dnf ? "DNF" : r.position}</td>
+
+      <td class="crew-cell">
+
+        <div class="crew-driver">
+          #${r.rider} ${rider.name || "-"}
+        </div>
+
+        <div class="crew-codriver">
+          ${rider.co_driver || ""}
+        </div>
+
+        <div class="crew-car">
+          ${(rider.car_brand || "")}
+          ${(rider.car_model || "")}
+          ${rider.category ? " • " + rider.category : ""}
+        </div>
+
+      </td>
+
+      <td>
+        ${r.dnf ? "-" : formatMs(r.time)}
+      </td>
+
+      <td>
+        ${r.dnf || r.position === 1
+          ? "-"
+          : "+" + formatMs(r.gap)}
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+
   });
 
 }

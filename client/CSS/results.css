@@ -190,3 +190,106 @@ tbody tr:hover {
   }
 
 }
+
+/* =========================
+   LAYOUT
+========================= */
+
+.results-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+
+  padding: 10px;
+}
+
+.results-panel {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 10px;
+
+  overflow: auto;
+
+  max-height: calc(100vh - 140px);
+}
+
+/* =========================
+   TABLE
+========================= */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+th {
+  position: sticky;
+  top: 0;
+
+  background: #1b1b1b;
+
+  z-index: 20;
+}
+
+td {
+  padding: 8px;
+  border-bottom: 1px solid #222;
+
+  vertical-align: top;
+}
+
+tr:hover {
+  background: #1a1a1a;
+}
+
+/* =========================
+   CREW BLOCK
+========================= */
+
+.crew-cell {
+  min-width: 220px;
+}
+
+.crew-driver {
+  font-weight: bold;
+  color: #fff;
+
+  font-size: 1rem;
+}
+
+.crew-codriver {
+  color: #aaa;
+
+  font-size: 0.85rem;
+
+  margin-top: 2px;
+}
+
+.crew-car {
+  color: #66ccff;
+
+  font-size: 0.8rem;
+
+  margin-top: 2px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 900px) {
+
+  .results-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .crew-cell {
+    min-width: auto;
+  }
+
+  td, th {
+    font-size: 0.9rem;
+  }
+
+}
