@@ -43,19 +43,66 @@
 
 </div>
 
-<table id="results-table">
-  <thead>
-    <tr>
-      <th>#</th>
-      <th>Jezdec</th>
-      <th>Auto</th>
-      <th>Čas</th>
-      <th>Ztráta</th>
-    </tr>
-  </thead>
+<div class="results-layout">
 
-  <tbody></tbody>
-</table>
+  <!-- LEFT = STAGE -->
+  <section class="results-panel">
+
+    <h2 id="stage-title">
+      Výsledky RZ
+    </h2>
+
+    <table id="results-table">
+
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Posádka</th>
+          <th>Čas</th>
+          <th>Ztráta</th>
+          <th>Pen.</th>
+        </tr>
+      </thead>
+
+      <tbody></tbody>
+
+    </table>
+
+  </section>
+
+  <!-- RIGHT = OVERALL -->
+  <section class="results-panel">
+
+    <h2>
+      Celkově po RZ
+    </h2>
+
+    <table id="overall-results-table">
+
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Posádka</th>
+          <th>Celkem</th>
+          <th>Ztráta</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr>
+          <td colspan="4">
+            Overall zatím není aktivní
+          </td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </section>
+
+</div>
 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
