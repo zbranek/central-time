@@ -40,20 +40,11 @@ function formatStageTime(ms) {
  * NAVIGACE
  *********************************/
 function showView(id) {
-  // Skrýt všechny pohledy a odebrat active třídu
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  
-  const targetView = document.getElementById('view-' + id);
-  if (targetView) targetView.classList.add('active');
+  document.getElementById('view-' + id).classList.add('active');
 
-  // Správné přepnutí aktivního tlačítka bez použití globálního 'event'
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    b.classList.remove('active');
-    // Pokud tlačítko v onclick textu obsahuje dané ID, aktivujeme ho
-    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${id}'`)) {
-      b.classList.add('active');
-    }
-  });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
 }
 
 function saveRaceId() {
@@ -309,10 +300,6 @@ function addItinerary() {
 
   itinerary.push(item);
   renderItinerary();
-
-  // Vyčištění polí po úspěšném přidání
-document.getElementById("it-label").value = "";
-document.getElementById("it-time").value = "";
 }
 
 function renderItinerary() {
@@ -369,12 +356,6 @@ async function addItinerary() {
     alert("Chyba při ukládání");
     return;
   }
-
-  if (error) {
-  console.error(error);
-  alert("Chyba při komunikaci s databází: " + error.message);
-  return;
-}
 
   loadItinerary();
 }
