@@ -8,28 +8,6 @@ function formatMs(ms) {
   return `${m}:${String(s).padStart(2, "0")}.${String(msPart).padStart(3, "0")}`;
 }
 
-/* Formátování data a času pro itinerář (vstup: "2026-05-11T15:30:00")
-function formatItineraryTime(isoString) {
-  if (!isoString) return "-";
-  
-  try {
-    // Rozdělíme text na část před "T" (datum) a za "T" (čas)
-    const [datePart, timePart] = isoString.split("T");
-    
-    // Rozdělíme datum na RRRR, MM, DD
-    const [year, month, day] = datePart.split("-");
-    
-    // Rozdělíme čas na HH, MM, SS
-    const [hours, minutes] = timePart.split(":");
-    
-    // Vrátíme výsledek v čistém českém formátu (můžete si upravit oddělovač)
-    return `${day}.${month}.${year} --- ${hours}:${minutes}`;
-  } catch (e) {
-    // Kdyby náhodou v DB byl jiný formát, vrátíme původní text, ať kód nespadne
-    return isoString;
-  }
-} */
-
 
 function saveRaceId() {
 
@@ -289,123 +267,123 @@ logs.forEach(log => {
   renderOverallResults(finalResults, ridersMap);
 }
 
-//render results změna podle Gemini -  
+
 function renderResults(results, ridersMap) {
   const tbody = document.querySelector("#results-table tbody");
   tbody.innerHTML = "";
 
-  results.forEach((r, index) => {
+  results.forEach(r => {
     const rider = ridersMap[r.rider] || {};
+
     const tr = document.createElement("tr");
 
-    // Zachování vašich medailových tříd a DNF stavů
-    if (r.position === 1) tr.classList.add("gold");
-    if (r.position === 2) tr.classList.add("silver");
-    if (r.position === 3) tr.classList.add("bronze");
-    if (r.dnf) tr.classList.add("dnf");
 
-    // Příprava textů posádky a vozu
-    const pozice = r.dnf ? "DNF" : `${r.position}.`;
-    const jmenoJezdce = rider.name || "Neznámý";
-    const spolujezdec = rider.co_driver ? ` / ${rider.co_driver}` : "";
-    const auto = `${rider.car_brand || ""} ${rider.car_model || ""}`.trim() || "-";
-    const kategorie = rider.category || "-";
+//nový vizual, může rozbít výsledky v Admin sekci  - když tak použít ze zálohy 
+tr.innerHTML = `
+  <td class="pos">${r.dnf ? "DNF" : r.position}</td>
 
-    // Čas a penalizace (po vzoru Lukov)
-    const hlavniCas = r.dnf ? '<span class="badge-dnf">DNF</span>' : formatMs(r.time);
-    const penalizace = (r.penalty && r.penalty > 0) ? `+${formatMs(r.penalty)}` : "";
+  <td>#${r.rider}</td>
 
-    // Ztráta na 1. místo
-    const ztrataNaPrvniho = (r.dnf || r.position === 1) ? "-" : "+" + formatMs(r.gap);
-    
-    // Výpočet ztráty na předchozího jezdce (dopočítáváme z pole výsledků)
-    let ztrataNaPredchoziho = "-";
-    if (!r.dnf && index > 0 && !results[index - 1].dnf) {
-      const gapPrev = r.time - results[index - 1].time;
-      ztrataNaPredchoziho = "+" + formatMs(gapPrev);
-    }
+<td class="crew-cell">
 
-    // Nová štíhlá struktura řádku
-    tr.innerHTML = `
-      <td class="col-pos">${pozice}</td>
-      <td class="col-no">#${r.rider}</td>
-      <td class="crew-cell">
-        <div class="crew-names">${jmenoJezdce}${spolujezdec}</div>
-        <div class="crew-car">${auto}</div>
-      </td>
-      <td class="col-cat">${kategorie}</td>
-      <td>
-        <div class="time-block">
-          <div class="time-main">${hlavniCas}</div>
-          ${penalizace ? `<div class="time-penalty" style="color: #ef4444; font-size: 0.8rem; font-weight: bold;">${penalizace}</div>` : ""}
-        </div>
-      </td>
-      <td>
-        <div class="gap-block">
-          <div class="gap-leader">${ztrataNaPrvniho}</div>
-          <div class="gap-prev" style="color: #64748b; font-size: 0.8rem;">${ztrataNaPredchoziho}</div>
-        </div>
-      </td>
-    `;
+  <div class="crew-driver">
+    #${r.rider} ${rider.name || "-"}
+  </div>
 
-    tbody.appendChild(tr);
-  });
+  <div class="crew-codriver">
+    ${rider.co_driver || ""}
+  </div>
+
+  <div class="crew-car">
+    ${(rider.car_brand || "")}
+    ${(rider.car_model || "")}
+    ${rider.category ? " • " + rider.category : ""}
+  </div>
+
+</td>
+
+  <td class="time">
+    ${r.dnf ? "-" : formatMs(r.time)}
+  </td>
+
+  <td class="gap">
+    ${r.dnf || r.position === 1
+      ? "-"
+      : "+" + formatMs(r.gap)}
+  </td>
+`;
+
+if (r.position === 1) tr.classList.add("gold");
+if (r.position === 2) tr.classList.add("silver");
+if (r.position === 3) tr.classList.add("bronze");
+
+if (r.dnf) tr.classList.add("dnf");
+
+if (r.dnf) {
+  tr.style.background = "#330000";
+  tr.style.color = "#ff5555";
 }
 
-//funce overall results podle Gemini  
+    tbody.appendChild(tr);
+  });
+
+}
+
+
 //overall výsledky pro pravou část tabulky   
-// Celkové výsledky uděláme identické, aby obě tabulky měly stejný čistý vzhled
 function renderOverallResults(results, ridersMap) {
-  const tbody = document.querySelector("#overall-results-table tbody");
+
+  const tbody =
+    document.querySelector(
+      "#overall-results-table tbody"
+    );
+
   tbody.innerHTML = "";
 
-  results.forEach((r, index) => {
-    const rider = ridersMap[r.rider] || {};
-    const tr = document.createElement("tr");
+  results.forEach(r => {
 
-    if (r.dnf) tr.classList.add("dnf");
+    const rider =
+      ridersMap[r.rider] || {};
 
-    const pozice = r.dnf ? "DNF" : `${r.position}.`;
-    const jmenoJezdce = rider.name || "Neznámý";
-    const spolujezdec = rider.co_driver ? ` / ${rider.co_driver}` : "";
-    const auto = `${rider.car_brand || ""} ${rider.car_model || ""}`.trim() || "-";
-    const kategorie = rider.category || "-";
-
-    const hlavniCas = r.dnf ? '<span class="badge-dnf">DNF</span>' : formatMs(r.time);
-    const penalizace = (r.penalty && r.penalty > 0) ? `+${formatMs(r.penalty)}` : "";
-
-    const ztrataNaPrvniho = (r.dnf || r.position === 1) ? "-" : "+" + formatMs(r.gap);
-    
-    let ztrataNaPredchoziho = "-";
-    if (!r.dnf && index > 0 && !results[index - 1].dnf) {
-      const gapPrev = r.time - results[index - 1].time;
-      ztrataNaPredchoziho = "+" + formatMs(gapPrev);
-    }
+    const tr =
+      document.createElement("tr");
 
     tr.innerHTML = `
-      <td class="col-pos">${pozice}</td>
-      <td class="col-no">#${r.rider}</td>
+      <td>${r.dnf ? "DNF" : r.position}</td>
+
       <td class="crew-cell">
-        <div class="crew-names">${jmenoJezdce}${spolujezdec}</div>
-        <div class="crew-car">${auto}</div>
-      </td>
-      <td class="col-cat">${kategorie}</td>
-      <td>
-        <div class="time-block">
-          <div class="time-main">${hlavniCas}</div>
-          ${penalizace ? `<div class="time-penalty" style="color: #ef4444; font-size: 0.8rem; font-weight: bold;">${penalizace}</div>` : ""}
+
+        <div class="crew-driver">
+          #${r.rider} ${rider.name || "-"}
         </div>
-      </td>
-      <td>
-        <div class="gap-block">
-          <div class="gap-leader">${ztrataNaPrvniho}</div>
-          <div class="gap-prev" style="color: #64748b; font-size: 0.8rem;">${ztrataNaPredchoziho}</div>
+
+        <div class="crew-codriver">
+          ${rider.co_driver || ""}
         </div>
+
+        <div class="crew-car">
+          ${(rider.car_brand || "")}
+          ${(rider.car_model || "")}
+          ${rider.category ? " • " + rider.category : ""}
+        </div>
+
+      </td>
+
+      <td>
+        ${r.dnf ? "-" : formatMs(r.time)}
+      </td>
+
+      <td>
+        ${r.dnf || r.position === 1
+          ? "-"
+          : "+" + formatMs(r.gap)}
       </td>
     `;
 
     tbody.appendChild(tr);
+
   });
+
 }
 
 function showView(id) {
@@ -429,26 +407,8 @@ function showView(id) {
   event.target.classList.add("active");
 }
 
-// 1. Pomocná funkce pro úpravu formátu (vložte ji kamkoliv do results.js, např. na začátek nebo konec)
-function formatItineraryTime(isoString) {
-  if (!isoString) return "-";
-  
-  try {
-    // Rozdělíme "2026-05-11T15:30:00" na datum a čas
-    const [datePart, timePart] = isoString.split("T");
-    const [year, month, day] = datePart.split("-");
-    const [hours, minutes] = timePart.split(":");
-    
-    // Výsledný formát: "11.05.2026 -- 15:30"
-    return `${day}.${month}.${year} -- ${hours}:${minutes}`;
-  } catch (e) {
-    // Kdyby formát v DB z nějakého důvodu neseděl, vrátíme původní text, ať kód nespadne
-    return isoString;
-  }
-}
-
-// 2. Vaše upravená funkce s nasazeným formátováním
 async function loadPublicItinerary() {
+
   const raceId = getRaceId();
 
   const { data, error } =
@@ -465,19 +425,26 @@ async function loadPublicItinerary() {
     return;
   }
 
-  const tbody = document.querySelector("#public-itinerary-table tbody");
+  const tbody =
+    document.querySelector(
+      "#public-itinerary-table tbody"
+    );
+
   tbody.innerHTML = "";
 
   data.forEach(stage => {
-    const tr = document.createElement("tr");
 
-    // Zde jsme upravili třetí sloupec pomocí funkce formatItineraryTime()
+    const tr =
+      document.createElement("tr");
+
     tr.innerHTML = `
-      <td>${stage.status || ""}</td>
-      <td>${stage.name || ""}</td>
-      <td>${formatItineraryTime(stage.start_time)}</td>
+      <td>${stage.status}</td>
+      <td>${stage.name}</td>
+      <td>${stage.start_time || "-"}</td>
     `;
 
     tbody.appendChild(tr);
+
   });
+
 }
