@@ -22,6 +22,7 @@ function saveRaceId() {
 
   // 🔥 reload stages
   loadStages();
+  loadPublicItinerary();
 
   // 🔥 vyčistit tabulku výsledků
   const tbody = document.querySelector("#results-table tbody");
@@ -80,6 +81,8 @@ document.addEventListener("DOMContentLoaded", () => {
   
 
   loadStages();
+  loadPublicItinerary();
+
 
 });
 
@@ -375,6 +378,69 @@ function renderOverallResults(results, ridersMap) {
           ? "-"
           : "+" + formatMs(r.gap)}
       </td>
+    `;
+
+    tbody.appendChild(tr);
+
+  });
+
+}
+
+function showView(id) {
+
+  document
+    .querySelectorAll(".view")
+    .forEach(v =>
+      v.classList.remove("active")
+    );
+
+  document
+    .getElementById("view-" + id)
+    .classList.add("active");
+
+  document
+    .querySelectorAll(".tab-btn")
+    .forEach(b =>
+      b.classList.remove("active")
+    );
+
+  event.target.classList.add("active");
+}
+
+async function loadPublicItinerary() {
+
+  const raceId = getRaceId();
+
+  const { data, error } =
+    await supabaseClient
+      .from("stages")
+      .select("*")
+      .eq("race_id", raceId)
+      .order("start_time", {
+        ascending: true
+      });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  const tbody =
+    document.querySelector(
+      "#public-itinerary-table tbody"
+    );
+
+  tbody.innerHTML = "";
+
+  data.forEach(stage => {
+
+    const tr =
+      document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${stage.status}</td>
+      <td>${stage.name}</td>
+      <td>${stage.start_time || "-"}</td>
     `;
 
     tbody.appendChild(tr);

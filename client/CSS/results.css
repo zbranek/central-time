@@ -244,11 +244,71 @@ tr:hover {
 }
 
 /* =========================
+   COLUMN WIDTHS
+========================= */
+
+/* pořadí */
+#results-table th:nth-child(1),
+#results-table td:nth-child(1),
+
+#overall-results-table th:nth-child(1),
+#overall-results-table td:nth-child(1) {
+  width: 50px;
+  text-align: center;
+}
+
+/* crew */
+#results-table th:nth-child(2),
+#results-table td:nth-child(2),
+
+#overall-results-table th:nth-child(2),
+#overall-results-table td:nth-child(2) {
+  width: auto;
+}
+
+/* time */
+#results-table th:nth-child(3),
+#results-table td:nth-child(3),
+
+#overall-results-table th:nth-child(3),
+#overall-results-table td:nth-child(3) {
+  width: 120px;
+
+  text-align: right;
+
+  font-family: monospace;
+}
+
+/* gap */
+#results-table th:nth-child(4),
+#results-table td:nth-child(4),
+
+#overall-results-table th:nth-child(4),
+#overall-results-table td:nth-child(4) {
+  width: 120px;
+
+  text-align: right;
+
+  font-family: monospace;
+}
+
+/* penalty */
+#results-table th:nth-child(5),
+#results-table td:nth-child(5) {
+  width: 90px;
+
+  text-align: right;
+
+  color: orange;
+}
+
+/* =========================
    CREW BLOCK
 ========================= */
 
 .crew-cell {
   min-width: 220px;
+  overflow: hidden;
 }
 
 .crew-driver {
@@ -292,4 +352,16 @@ tr:hover {
     font-size: 0.9rem;
   }
 
+}
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+}
+
+.tab-btn.active {
+  background: #004400;
 }

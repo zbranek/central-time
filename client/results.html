@@ -9,7 +9,19 @@
   <link rel="stylesheet" href="./css/results.css">
 </head>
 
+<header>
 
+  <button class="tab-btn active"
+          onclick="showView('results')">
+    VÝSLEDKY
+  </button>
+
+  <button class="tab-btn"
+          onclick="showView('itinerary')">
+    ITINERÁŘ
+  </button>
+
+</header>
 
 <h1>Výsledky</h1>
 
@@ -43,6 +55,7 @@
 
 </div>
 
+<div id="view-results" class="view active">
 <div class="results-layout">
 
   <!-- LEFT = STAGE -->
@@ -101,6 +114,29 @@
     </table>
 
   </section>
+
+</div>
+</div>
+
+<!-- ================= ITINERÁŘ ================= -->
+
+<div id="view-itinerary" class="view">
+
+  <h2>Itinerář závodu</h2>
+
+  <table id="public-itinerary-table">
+
+    <thead>
+      <tr>
+        <th>Typ</th>
+        <th>Bod</th>
+        <th>Čas</th>
+      </tr>
+    </thead>
+
+    <tbody></tbody>
+
+  </table>
 
 </div>
 
