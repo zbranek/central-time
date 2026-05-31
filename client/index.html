@@ -22,7 +22,17 @@
         nav { background: #222; padding: 10px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-around; }
         nav button { padding: 10px; font-size: 0.9rem; flex: 1; }
 
-        #log { text-align: left; max-height: 300px; overflow-y: auto; border: 1px solid #333; padding: 10px; font-family: monospace; background: #000; margin-top: 10px; }
+        #log {
+    text-align: left;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #333;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 1.25rem;
+    background: #000;
+    margin-top: 10px;
+}
         
         .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; max-width: 280px; margin: 10px auto; }
         
@@ -149,7 +159,7 @@
             <option value="unassigned">-- Vyberte roli --</option>
             <option value="START">S - START</option>
             <option value="FINISH">F - CÍL</option>
-        </select>
+        </select>   
     </div>
 
     <div class="setup-item" style="border: 2px solid #006600;">

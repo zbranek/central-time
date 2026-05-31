@@ -252,9 +252,17 @@ function renderRecentFinishes() {
     `;
 
 div.innerHTML = `
-  <div>
-    <strong>#${log.rider}</strong>
-    <span style="color:#888;">${formatTime(log.time)}</span>
+  <div style="font-size:1.6rem;">
+    <strong
+      onclick="editRecentFinishRider(${index})"
+      style="cursor:pointer; color:${log.rider === '?' ? '#f55' : '#ff0'};"
+    >
+      #${log.rider}
+    </strong>
+    <span style="color:#aaa; margin-left:10px;">
+      ${formatTime(log.time)}
+    </span>
+
     ${log.penalty ? `<span style="color:orange;"> | ⚠ ${log.penalty}</span>` : ""}
   </div>
 
@@ -299,7 +307,12 @@ async function updateLogPenalty(logId, penalty) {
     div.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <strong>#${log.rider}</strong>
+          <strong
+            onclick="editRecentFinishRider(${index})"
+             style="cursor:pointer; color:${log.rider === '?' ? '#f55' : '#ff0'};"
+              >
+             #${log.rider}
+          </strong>
           <span style="color:#888;">${log.time_ms}</span>
         </div>
       </div>
@@ -320,6 +333,17 @@ async function updateLogPenalty(logId, penalty) {
 
 
 // Tlačítko CÍL - zaznamená čas okamžitě
+// uprava logu až po jeho zaznamenání  
+document.getElementById('finishBtn').onclick = function() {
+    const now = getCentralTime();
+
+    recordEvent("FINISH", "?", now);
+
+    pushRecentFinish(events[events.length - 1]);
+};
+
+//původní funkce - vyskočilo okno pro zadání čísla jezdce 
+/*
 document.getElementById('finishBtn').onclick = function() {
     const now = Date.now() + timeOffset;
     const index = recordEvent("FINISH", "?", now);
@@ -330,7 +354,7 @@ document.getElementById('finishBtn').onclick = function() {
     document.getElementById('finishModal').classList.remove('hidden');
     document.getElementById('finishRiderInput').value = "";
 };
-
+*/
 function confirmFinishRider() {
     const riderNum = document.getElementById('finishRiderInput').value;
     if (riderNum && pendingFinishIndex !== null) {
@@ -344,6 +368,26 @@ function confirmFinishRider() {
         pendingFinishIndex = null;
         
     }
+}
+
+function editRecentFinishRider(index) {
+  const log = recentFinishes[index];
+  if (!log) return;
+
+  const newRider = prompt("Číslo jezdce:", log.rider);
+
+  if (newRider === null) return;
+
+  log.rider = newRider;
+
+  // aktualizace i v hlavním poli events
+  const event = events.find(e => e.id === log.id);
+  if (event) {
+    event.rider = newRider;
+  }
+
+  saveAndRender();
+  renderRecentFinishes();
 }
 
 /*********************************
