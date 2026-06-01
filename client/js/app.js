@@ -160,14 +160,14 @@ function checkAutoStart(now) {
     const countdownEl = document.getElementById('countdown');
     const displayBox = countdownEl.parentElement; // Kontejner, kde je odpočet
 
-    // 1. Fáze: Odpočet (posledních 10 sekund)
-    if (diff <= 10000 && diff > 0) {
+    // 1. Fáze: Odpočet (posledních 20 sekund)
+    if (diff <= 20000 && diff > 0) {
         const seconds = Math.ceil(diff / 1000);
         countdownEl.textContent = seconds;
         
         // --- NOVINKA: Barevné varování ---
         if (seconds <= 5) {
-            displayBox.style.backgroundColor = "#660000"; // Tmavě červená při 5s a méně
+            displayBox.style.backgroundColor = "#bd0404"; // Tmavě červená při 5s a méně
             countdownEl.style.color = "white";
         } else {
             displayBox.style.backgroundColor = "#222"; // Normální pozadí
@@ -184,7 +184,7 @@ function checkAutoStart(now) {
             startPlan.triggered = true;
             countdownEl.textContent = "GO!";
             countdownEl.classList.add('go');
-            displayBox.style.backgroundColor = "#004400"; // Zelená při startu
+            displayBox.style.backgroundColor = "#06c006"; // Zelená při startu
         }
     } 
     // 3. Fáze: Úklid
