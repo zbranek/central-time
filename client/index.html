@@ -22,6 +22,33 @@
         nav { background: #222; padding: 10px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-around; }
         nav button { padding: 10px; font-size: 0.9rem; flex: 1; }
 
+        .countdown {
+             font-size: 7rem;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+
+.keypad {
+    display: grid;
+    grid-template-columns: 80px 80px 80px 140px;
+    grid-template-rows: repeat(4, 80px);
+    gap: 10px;
+    justify-content: center;
+}
+
+
+.keypad button {
+    font-size: 1.5rem;
+    border-radius: 8px;
+    border: yelow solid 2px;
+    background: #333;
+    color: white;
+}
+
+.keypad button:active {
+    transform: scale(0.95);
+}
+
         #log {
     text-align: left;
     max-height: 300px;
@@ -34,7 +61,7 @@
     margin-top: 10px;
 }
         
-        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; max-width: 280px; margin: 10px auto; }
+       
         
         .setup-item { margin: 20px 0; padding: 15px; border: 1px solid #333; border-radius: 8px; }
 
@@ -67,24 +94,39 @@
     <div id="start-display-box" style="display: flex; justify-content: center; align-items: center; gap: 30px; background: #222; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
         <div>
             <div style="font-size: 1rem; color: #aaa;">JEZDEC</div>
-            <div id="active-rider-display" style="font-size: 4rem; font-weight: bold; color: #00ff00;">--</div>
+            <div id="active-rider-display" style="font-size: 5rem; font-weight: bold; color: #00ff00;">--</div>
         </div>
         <div>
             <div style="font-size: 1rem; color: #aaa;">START ZA</div>
-            <div id="countdown" class="countdown">--</div>
+            <div id="countdown" class="countdown" >--</div>
         </div>
     </div>
     
-    <div class="rider-area">
-        <input type="number" id="riderNumber" readonly placeholder="Číslo jezdce">
-        <div class="keypad">
-            <button onclick="pressNum(1)">1</button><button onclick="pressNum(2)">2</button><button onclick="pressNum(3)">3</button>
-            <button onclick="pressNum(4)">4</button><button onclick="pressNum(5)">5</button><button onclick="pressNum(6)">6</button>
-            <button onclick="pressNum(7)">7</button><button onclick="pressNum(8)">8</button><button onclick="pressNum(9)">9</button>
-            <button onclick="clearNum()" style="color: #ff4444;">C</button><button onclick="pressNum(0)">0</button>
-            <button onclick="clearNum()" style="background: #600; color: #fff;">STOP</button>
-        </div>
+<div class="rider-area">
+    <input type="number" id="riderNumber" readonly placeholder="Číslo jezdce">
+
+    <div class="keypad">
+        <button onclick="pressNum(1)">1</button>
+        <button onclick="pressNum(2)">2</button>
+        <button onclick="pressNum(3)">3</button>
+        <button class="action" style="font: size 0,5rem; font-weight: bold; color: red; " onclick="clearNum()">OPRAVA</button>
+
+        <button onclick="pressNum(4)">4</button>
+        <button onclick="pressNum(5)">5</button>
+        <button onclick="pressNum(6)">6</button>
+        <button class="action stop" style="font: size 0,5rem; font-weight: bold; color: red;  "onclick="clearNum()">STOP</button>
+
+        <button onclick="pressNum(7)">7</button>
+        <button onclick="pressNum(8)">8</button>
+        <button onclick="pressNum(9)">9</button>
+        <div></div>
+
+        <div></div>
+        <button onclick="pressNum(0)">0</button>
+        <div></div>
+        <div></div>
     </div>
+</div>
 </section>
 
 <section id="view-finish" class="view">

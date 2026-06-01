@@ -1,10 +1,24 @@
+/*barvy*/
+:root {
+  --color-1-pismo: #00ff00;
+  --color-2-backround: #000000;
+  --color-3-border: #232734;
+  --color-4-backround2: #c2c2c2;
+   --color-5-red: #ef4444;
+   --color-6-button: #00fff7;
+   --color-7-gap-leader:#ffff00;
+  --color-8-gap-prev:#cece00;
+}
+
+
 /* Globální reset a tmavý podklad */
 body {
   margin: 0;
   padding: 0;
   background: #0d0e12;
-  color: #e2e8f0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--color-1-pismo);
+   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+  
   -webkit-font-smoothing: antialiased;
 }
 
@@ -13,16 +27,16 @@ body {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: #14161e;
+  background: var(--color-2-backround);
   padding: 12px 16px;
-  border-bottom: 1px solid #232734;
+  border-bottom: 1px solid var(--color-3-border);
   box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 
 .race-title {
   font-size: 1.1rem;
   font-weight: 800;
-  color: #3bf838; /* Moderní modrá místo ostré zelené */
+  color: var(var(--color-1-pismo)); /* Moderní modrá místo ostré zelené */
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 10px;
@@ -37,9 +51,9 @@ body {
 .controls input,
 .controls select,
 .controls button {
-  background: #1e2230;
-  color: #fff;
-  border: 1px solid #2d334a;
+  background: var(--color-2-backround);
+  color: var(--color-1-pismo);
+  border: 1px solid var(--color-3-border);
   border-radius: 6px;
   padding: 8px 12px;
   font-size: 0.9rem;
@@ -55,7 +69,7 @@ body {
   cursor: pointer;
   transition: background 0.2s;
 }
-.controls button:hover { background: #0369a1; }
+.controls button:hover { background: var(--color-6-button); }
 
 /* Tabulky výsledků */
 /* Na stolním počítači se sloupce zobrazí v opačném pořadí (Celkově vlevo, RZ vpravo) */
@@ -80,8 +94,8 @@ body {
   font-size: 1.2rem;
   font-weight: 700;
   margin-bottom: 12px;
-  color: #f8fafc;
-  border-left: 4px solid #38bdf8;
+  color: --var(var(--color-1-pismo));
+  border-left: 4px solid var(--color-4-backround2);
   padding-left: 8px;
 }
 
@@ -89,7 +103,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 30px;
-  background: #14161e;
+  background: var(--color-2-backround);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -97,7 +111,7 @@ table {
 th {
   position: sticky;
   top: 110px; /* Přizpůsobit výšce topbaru */
-  background: #1e2230;
+  background: --var(var(--color-1-pismo));
   padding: 10px 12px;
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -109,7 +123,7 @@ th {
 
 td {
   padding: 10px 12px;
-  border-bottom: 1px solid #1e2230;
+  border-bottom: 1px solid #000000;
   vertical-align: middle;
   font-size: 0.95rem;
 }
@@ -125,34 +139,35 @@ tbody tr:hover {
 
 /* Formátování specifických sloupců */
 .col-pos { font-weight: 700; color: #38bdf8; width: 40px; text-align: center; }
-.col-no { font-weight: 600; color: #e2e8f0; width: 40px; text-align: center; background: rgba(255,255,255,0.03); }
+.col-no { font-weight: 600; color: var(var(--color-1-pismo)); width: 40px; text-align: center; background: rgba(255,255,255,0.03); }
 
 /* Posádka a auto */
 .crew-wrapper {
   display: flex;
   flex-direction: column;
 }
-.crew-names { font-weight: 600; color: #f1f5f9; line-height: 1.3; }
-.crew-car { font-size: 0.78rem; color: #64748b; margin-top: 2px; }
+.crew-names { font-weight: 600; color: var(--color-1-pismo); line-height: 1.3; }
+.crew-car { font-size: 0.78rem; color: var(--color-1-pismo); margin-top: 2px; }
 
 /* Skupina / Třída */
-.col-cat { font-size: 0.8rem; color: #94a3b8; font-weight: 600; }
+.col-cat { font-size: 0.8rem; color: var(--color-1-pismo); font-weight: 600; }
 
 /* Časy a Monospace */
 .time-block, .gap-block {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  
   font-size: 0.9rem;
   line-height: 1.3;
 }
-.time-main { color: #f8fafc; font-weight: 600; }
-.time-penalty { color: #ef4444; font-size: 0.78rem; font-weight: 600; }
+.time-main { color: var(--color-1-pismo); font-weight: 600; }
+.time-penalty { color: var(--color-1-pismo); font-size: 0.78rem; font-weight: 600; }
 
-.gap-leader { color: #94a3b8; }
-.gap-prev { color: #64748b; font-size: 0.8rem; }
+.gap-leader { color: var(--color-7-gap-leader); }
+.gap-prev { color: var(--color-8-gap-prev); font-size: 0.8rem; }
 
 /* Stavy */
 .row-dnf { opacity: 0.5; background: rgba(239, 68, 68, 0.05) !important; }
-.badge-dnf { color: #ef4444; font-weight: 700; font-size: 0.8rem; }
+.badge-dnf { color: var(--color-5-red); font-weight: 700; font-size: 0.8rem; }
 
 /* Responzivita pro malé mobily */
 @media (max-width: 600px) {
@@ -166,7 +181,7 @@ tbody tr:hover {
 
 /* Zapne samostatné scrollování pro každý panel zvlášť */
 .results-panel {
-  background: #14161e;
+  background: var(--color-2-backround);
   border-radius: 8px;
   padding: 12px;
   
@@ -182,7 +197,7 @@ tbody tr:hover {
 #overall-results-table th {
   position: sticky !important;
   top: 0 !important; /* Absolutně bezpečné: 0 znamená začátek panelu, nikdy nic nepřekryje */
-  background-color: #1e2230 !important;
+  background-color: #1d1d1d !important;
   z-index: 10;
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
@@ -192,7 +207,7 @@ tbody tr:hover {
   width: 6px;
 }
 .results-panel::-webkit-scrollbar-thumb {
-  background: #2d334a;
+  background: #5f5f5f;
   border-radius: 3px;
 }
 
@@ -207,15 +222,15 @@ tbody tr:hover {
 
 /* Moderní vzhled pro horní přepínací lištu s tlačítky */
 header {
-  background: #14161e;
+  background: var(--color-2-backround);
   padding: 12px 16px;
   display: flex;
   gap: 10px;
-  border-bottom: 1px solid #232734;
+  border-bottom: 1px solid var(--color-1-pismo);
 }
 
 .tab-btn {
-  background: #1e2230;
+  background: #000000;
   color: #94a3b8;
   border: 1px solid #2d334a;
   padding: 10px 20px;
@@ -229,12 +244,12 @@ header {
 
 .tab-btn:hover {
   background: #282e42;
-  color: #fff;
+  color: #3bf838;
 }
 
 .tab-btn.active {
   background: #0284c7; /* Modrá barva aktivní záložky */
-  color: #fff;
+  color: #3bf838;
   border-color: #0284c7;
   box-shadow: 0 0 12px rgba(2, 132, 199, 0.4);
 }
@@ -250,7 +265,7 @@ header {
 #public-itinerary-table th {
   position: sticky !important;
   top: 0 !important; /* Bezpečně se uzamkne na začátek panelu */
-  background-color: #1e2230 !important;
+  background-color: #000000 !important;
   z-index: 10;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   
@@ -286,5 +301,6 @@ header {
 #public-itinerary-table td:nth-child(4) {
   text-align: right;
   width: 100px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  
+   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;  
 }
