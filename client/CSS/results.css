@@ -1,13 +1,13 @@
 /*barvy*/
 :root {
-  --color-1-pismo: #00ff00;
+  --color-1-pismo: #f6ff00;
   --color-2-backround: #000000;
   --color-3-border: #232734;
   --color-4-backround2: #c2c2c2;
    --color-5-red: #ef4444;
    --color-6-button: #00fff7;
-   --color-7-gap-leader:#ffff00;
-  --color-8-gap-prev:#cece00;
+   --color-7-gap-leader:#5eff00;
+   --color-8-gap-prev:#5eff00;
 }
 
 
