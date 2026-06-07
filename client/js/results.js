@@ -31,7 +31,7 @@ function formatItineraryTime(isoString) {
 } */
 
 
-function saveRaceId() {
+function saveRaceIdResults() {
 
   console.log("SAVE CLICK");
 
@@ -113,8 +113,13 @@ document.addEventListener("DOMContentLoaded", () => {
 //nahravani výsledků automat po změně stage
 async function loadStages() {
 
-  const raceId = getRaceId();
+  const select = document.getElementById("stage-select");
 
+  if (!select) {
+    return;
+  }
+
+  const raceId = getRaceId();
   if (!raceId) {
     console.warn("Chybí Race ID");
     return;
@@ -134,8 +139,7 @@ async function loadStages() {
 
   //console.log("STAGES", raceId, data);
 
-  const select =
-    document.getElementById("stage-select");
+
 
   select.innerHTML = "";
 
@@ -449,6 +453,14 @@ function formatItineraryTime(isoString) {
 
 // 2. Vaše upravená funkce s nasazeným formátováním
 async function loadPublicItinerary() {
+
+  const tbody =
+    document.querySelector("#public-itinerary-table tbody");
+
+  if (!tbody) {
+    return;
+  }
+
   const raceId = getRaceId();
 
   const { data, error } =
@@ -465,13 +477,11 @@ async function loadPublicItinerary() {
     return;
   }
 
-  const tbody = document.querySelector("#public-itinerary-table tbody");
   tbody.innerHTML = "";
 
   data.forEach(stage => {
     const tr = document.createElement("tr");
 
-    // Zde jsme upravili třetí sloupec pomocí funkce formatItineraryTime()
     tr.innerHTML = `
       <td>${stage.status || ""}</td>
       <td>${stage.name || ""}</td>

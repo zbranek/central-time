@@ -1,7 +1,7 @@
 :root {
---bg: #111111;
---panel: #222222;
---panel-dark: #1a1a1a;
+--bg: #000000;
+--panel: #a39f9f;
+--panel-dark: #888484;
 
 --green: #00ff00;
 --yellow: #ffff00;
@@ -9,7 +9,7 @@
 --red: #ff4444;
 
 --border-light: #888888;
---border-dark: #000000;
+--border-dark: #615e5e;
 }
 
 body {
@@ -19,6 +19,14 @@ background: var(--bg);
 color: var(--white);
 font-family: Verdana, Arial, sans-serif;
 font-size: 14px;
+}
+
+label {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+  color: #aaa;
 }
 
 /* =========================

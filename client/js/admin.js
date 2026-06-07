@@ -57,14 +57,27 @@ function showView(id) {
 }
 
 function saveRaceId() {
-  const val = document.getElementById('race-id-input').value;
+  const val = document.getElementById('race-id-input').value.trim();
+
+
 
   localStorage.setItem('rally_race_id', val);
+
+  
 
   currentRaceId = val;
   window.APP.raceId = val;
 
   loadRiders();
+  loadItinerary();
+  updateRaceDisplay();
+  loadRaceInfo();
+}
+
+function updateRaceDisplay() {
+    const raceId = localStorage.getItem('rally_race_id') || "-----";
+
+    document.getElementById('current-race-display').textContent = raceId;
 }
 
 /*********************************
@@ -272,12 +285,85 @@ async function importCSV() {
   loadRiders();
 }
 
+//  informace o závodu  -----------------------------------------
 
-async function loadRiders() {
-  if (!currentRaceId) {
-    console.warn("Chybí race_id");
+//načtení závodu  ---------------
+async function loadRaceInfo() {
+
+  const raceId = getRaceId();
+
+  if (!raceId) return;
+
+  const { data, error } = await supabaseClient
+    .from("races")
+    .select("*")
+    .eq("race_id", raceId)
+    .single();
+
+  if (error || !data) {
+
+    document.getElementById("race-name").value = "";
+    document.getElementById("race-location").value = "";
+    document.getElementById("race-date").value = "";
+    document.getElementById("race-organizer").value = "";
+
     return;
   }
+
+  document.getElementById("race-name").value =
+    data.race_name || "";
+
+  document.getElementById("race-location").value =
+    data.location || "";
+
+  document.getElementById("race-date").value =
+    data.race_date || "";
+
+  document.getElementById("race-organizer").value =
+    data.organizer || "";
+}
+
+// Uložení informací o závodu  ---------------------  
+
+async function saveRaceInfo() {
+
+  const raceId = getRaceId();
+
+  if (!raceId) {
+    alert("Nejprve nastav ID závodu");
+    return;
+  }
+
+  const race = {
+    race_id: raceId,
+    race_name: document.getElementById("race-name").value.trim(),
+    location: document.getElementById("race-location").value.trim(),
+    race_date: document.getElementById("race-date").value,
+    organizer: document.getElementById("race-organizer").value.trim()
+  };
+
+  const { error } = await supabaseClient
+    .from("races")
+    .upsert([race]);
+
+  if (error) {
+    console.error(error);
+    alert("Chyba při ukládání závodu");
+    return;
+  }
+
+  console.log("Race info uloženo:", race);
+  alert("Údaje o závodu byly uloženy");
+}
+
+async function loadRiders() {
+
+  const raceId = getRaceId();
+ 
+ // if (!currentRaceId) {
+ //   console.warn("Chybí race_id");
+ //   return;
+ // }
 
   const { data, error } = await supabaseClient
     .from("riders")
@@ -335,6 +421,75 @@ function renderItinerary() {
 function deleteIt(i) {
   itinerary.splice(i, 1);
   renderItinerary();
+}
+
+async function loadStages() {
+
+ 
+
+
+  if (!select) {
+    return;
+  }
+
+  const raceId = getRaceId();
+
+  if (!raceId) {
+    console.warn("Chybí Race ID");
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("stages")
+    .select("*")
+    .eq("race_id", raceId)
+    .eq("status", "stage")
+    .order("stage_number", { ascending: true });
+
+  if (error) {
+    console.error("Chyba načítání stages:", error);
+    return;
+  }
+
+  select.innerHTML = "";
+
+  if (data.length === 0) {
+
+    select.innerHTML = `<option>Žádné RZ</option>`;
+
+    const tbody =
+      document.querySelector("#results-table tbody");
+
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8">
+            Pro tento závod nejsou vytvořeny RZ
+          </td>
+        </tr>
+      `;
+    }
+
+    return;
+  }
+
+  data.forEach(stage => {
+
+    const option =
+      document.createElement("option");
+
+    option.value = stage.stage_number;
+
+    option.textContent =
+      `RZ${stage.stage_number} - ${stage.name}`;
+
+    select.appendChild(option);
+
+  });
+
+  select.value = data[0].stage_number;
+
+  loadResults();
 }
 
 //tabulka Stages - napojeni
@@ -396,6 +551,9 @@ async function getNextStageNumber(raceId) {
 
 //načtení itineráře
 async function loadItinerary() {
+  console.log("LOAD ITINERARY CALLED");
+console.trace();
+  console.log("Itinerary race_id =", getRaceId());
   const raceId = getRaceId();
 
   const { data, error } = await supabaseClient
@@ -404,13 +562,22 @@ async function loadItinerary() {
     .eq("race_id", raceId)
     .order("start_time", { ascending: true });
 
+    console.log(data);
+
+
   if (error) {
     console.error(error);
     return;
   }
 
   const tbody = document.querySelector("#itinerary-table tbody");
+
+  console.log("tbody =", tbody);
+  console.log("Rows loaded:", data.length);
+  
   tbody.innerHTML = "";
+
+  
 
   data.forEach(row => {
     const tr = document.createElement("tr");
@@ -418,7 +585,7 @@ async function loadItinerary() {
     tr.innerHTML = `
       <td>${row.status}</td>
       <td>${row.name}</td>
-      <td>${row.start_time || "-"}</td>
+      <td>${formatDateTime(row.start_time)}</td>
       <td>
         <button onclick="deleteStage('${row.id}')">❌</button>
       </td>
@@ -427,6 +594,25 @@ async function loadItinerary() {
     tbody.appendChild(tr);
   });
 }
+
+//format data pro zobrazení v itineráři
+
+function formatDateTime(dateString) {
+  if (!dateString) return "-";
+
+  const d = new Date(dateString);
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+
+  return `${day}. ${month}. ${year} ${hours}:${minutes}`;
+}
+
+
 
 //mazání 
 async function deleteStage(id) {
