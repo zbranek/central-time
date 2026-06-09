@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Rally Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="./css/admin-classic.css">
+</head>
+
+<body>
+
+<div id="status-bar">
+  RALLY ADMIN v1.0 | Závod: <span id="current-race-display">-----</span> | Připojeno 
+</div>
+<header>
+  <button class="tab-btn active" onclick="showView('race')">ZÁVOD</button>
+  <button class="tab-btn" onclick="showView('riders')">ZÁVODNÍCI</button>
+  <button class="tab-btn" onclick="showView('itinerary')">ITINERÁŘ</button>
+  <button class="tab-btn" onclick="showView('categories')">KATEGORIE</button>
+</header>
+
+<!--<div id="view-race" class="view active"> -->
+
+  <h2>Závod</h2>
+
+  <label>ID závodu</label>
+
+  <input
+    type="text"
+    id="race-id-input"
+    maxlength="5"
+    inputmode="numeric"
+    pattern="[0-9]*"
+    placeholder="12345">
+
+  <button onclick="saveRaceId()">✅ Potvrdit</button>
+
+</div>
+
+<!-- ================= zavod ================= -->
+<div id="view-race" class="view active">
+
+<h2>Závod</h2>
+
+<label for="race-name">Název závodu</label>
+<input id="race-name" placeholder="Název závodu">
+
+<label for="race-location">Místo</label>
+<input id="race-location" placeholder="Místo konání">
+
+<label for="race-date">Datum</label>
+<input id="race-date" type="date">
+
+<label for="race-organizer">Pořadatel</label>
+<input id="race-organizer" placeholder="Pořadatel">
+
+
+
+  <button onclick="saveRaceInfo()">
+  💾 Uložit údaje o závodu
+</button>
+
+</div>
+
+<!-- puvodni část input čísla zavodu 
+
+<div class="race-setup">
+  <label>ID ZÁVODU</label>
+  
+  <input 
+     type="text"
+    id="race-id-input"
+    maxlength="5"
+    inputmode="numeric"
+    pattern="[0-9]*"
+    placeholder="12345"
+  >
+
+  <button onclick="saveRaceId()">✅ Potvrdit</button>
+</div>
+
+</div>-->
+
+<!-- ================= ADMINISTRACE ================= -->
+<div id="view-riders" class="view">
+
+<h2>Závodníci</h2>
+
+<label for="rider-number">Startovní číslo</label>
+<input
+  id="rider-number"
+  placeholder="Číslo jezdce">
+
+<label for="rider-name">Jméno a příjmení</label>
+<input
+  id="rider-name"
+  placeholder="Jméno a příjmení">
+
+<label for="co-driver">Posádka jezdec/spolujezdec</label>
+<input
+  id="co-driver"
+  placeholder="Jezdec/Spolujezdec">
+
+<label for="nationality">Národnost</label>
+<input
+  id="nationality"
+  placeholder="CZ/CZ ">
+
+<label for="car-brand">Značka vozu</label>
+<input
+  id="car-brand"
+  placeholder="Škoda">
+
+<label for="car-model">Model vozu</label>
+<input
+  id="car-model"
+  placeholder="Fabia Rally2">
+
+<label for="category">Kategorie</label>
+<input
+  id="category"
+  placeholder="RC2">
+
+<label for="team">Tým</label>
+<input
+  id="team"
+  placeholder="Název týmu">
+
+<div id="riders-status" style="margin:10px 0; font-size:0.9rem;"></div>
+
+<button id="save-rider-btn" onclick="addRider()">
+  ➕ Přidat jezdce
+</button>
+
+<div style="margin-bottom:15px;">
+  <input type="file" id="csv-file" accept=".csv">
+
+  <button onclick="importCSV()">
+    📥 Import CSV Napr.: Číslo;Závodník;Nár-Nár;Řidič-Spolujezdec;Značka;Model;Kategorie;Team
+  </button>
+</div>
+
+
+
+  <table id="riders-table">
+    <thead>
+      <tr>
+        <th>#</th>
+    <th>Jezdec</th>
+    <th>Národnost</th>
+    <th>Spolujezdec</th>
+    <th>Auto</th>
+    <th>Kategorie</th>
+    <th>Tým</th>
+    <th>Chip</th>
+    <th>❌</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div id="riders-list"></div>
+  <div id="riders-status">Načítám...</div>
+
+</div>
+
+
+
+<!-- ================= ITINERÁŘ ================= -->
+<div id="view-itinerary" class="view">
+
+  <h2>Itinerář</h2>
+
+  <select id="it-type">
+    <option value="stage">RZ</option>
+    <option value="service">Servis</option>
+    <option value="transfer">Přejezd</option>
+  </select>
+
+  <input id="it-label" placeholder="Popis (např. RZ1 START)">
+  <input id="it-time" type="datetime-local">
+
+  <button onclick="addItinerary()">➕ Přidat bod</button>
+
+  <table id="itinerary-table">
+    <thead>
+      <tr>
+        <th>Typ</th>
+        <th>Popis</th>
+        <th>Čas</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+</div>
+
+<!-- ================= kategorie - zatim neni napojeno na SUPA ================= -->
+<div id="view-categories" class="view">
+
+  <h2>Kategorie</h2>
+
+  <input id="category-name" placeholder="Název kategorie">
+
+  <button>
+    ➕ Přidat kategorii
+  </button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Kategorie</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="categories-table"></tbody>
+  </table>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<script src="./js/supabase.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/admin.js"></script>
+<!--  
+ <script src="./js/results.js"></script> -->
+
+</body>
+</html>
