@@ -23,7 +23,8 @@
 
 </header>
 
-<h1>Výsledky</h1>
+<!-- <h1>Výsledky</h1> -->
+
 
 <body>
 
@@ -40,7 +41,7 @@
       placeholder="Race ID"
     >
     <button onclick="saveRaceId()">
-      💾 Uložit zavod
+      💾 Načíst zavod
     </button>
 
     <select id="stage-select">
@@ -65,21 +66,20 @@
       Výsledky RZ
     </h2>
 
-    <table id="results-table">
-
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Posádka</th>
-          <th>Čas</th>
-          <th>Ztráta</th>
-          <th>Pen.</th>
-        </tr>
-      </thead>
-
-      <tbody></tbody>
-
-    </table>
+    <!-- results-table podle Gemini -->
+<table id="results-table">
+  <thead>
+    <tr>
+      <th>Poř.</th>
+      <th>St.č.</th>
+      <th>Posádka / Vozidlo</th>
+      <th>Sk.</th>
+      <th>Celkový čas<br><small style="color: #ef4444;">Penalizace</small></th>
+      <th>Ztráta 1.<br>Ztráta př.</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
   </section>
 
@@ -90,28 +90,25 @@
       Celkově po RZ
     </h2>
 
-    <table id="overall-results-table">
-
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Posádka</th>
-          <th>Celkem</th>
-          <th>Ztráta</th>
-        </tr>
-      </thead>
-
-      <tbody>
-
-        <tr>
-          <td colspan="4">
-            Overall zatím není aktivní
-          </td>
-        </tr>
-
-      </tbody>
-
-    </table>
+<table id="overall-results-table">
+  <thead>
+    <tr>
+      <th>Poř.</th>
+      <th>St.č.</th>
+      <th>Posádka / Vozidlo</th>
+      <th>Sk.</th>
+      <th>Celkový čas<br><small style="color: #ef4444;">Penalizace</small></th>
+      <th>Ztráta 1.<br>Ztráta př.</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="6">
+        Overall zatím není aktivní
+      </td>
+    </tr>
+  </tbody>
+</table>
 
   </section>
 
@@ -121,23 +118,23 @@
 <!-- ================= ITINERÁŘ ================= -->
 
 <div id="view-itinerary" class="view">
-
-  <h2>Itinerář závodu</h2>
-
-  <table id="public-itinerary-table">
-
-    <thead>
-      <tr>
-        <th>Typ</th>
-        <th>Bod</th>
-        <th>Čas</th>
-      </tr>
-    </thead>
-
-    <tbody></tbody>
-
-  </table>
-
+  <div class="results-layout" style="display: block;">
+    <section class="results-panel" style="max-height: calc(100vh - 100px);">
+      <h2>Itinerář závodu</h2>
+      
+      <table id="public-itinerary-table">
+        <thead>
+          <tr>
+            <th>RZ</th>
+            <th>Název RZ</th>
+            <th>Čas startu</th>
+          </tr>
+        </thead>
+        <tbody>
+          </tbody>
+      </table>
+    </section>
+  </div>
 </div>
 
 

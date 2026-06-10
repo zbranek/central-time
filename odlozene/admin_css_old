@@ -1,13 +1,12 @@
 :root {
 --bg: #000000;
---panel: #484646;
---panel-dark: #b0b0b0;
+--panel: #a39f9f;
+--panel-dark: #888484;
 
---green: #000000;
+--green: #00ff00;
 --yellow: #ffff00;
---white: #fffbfb;
+--white: #dddddd;
 --red: #ff4444;
---black: #000000;
 
 --border-light: #888888;
 --border-dark: #615e5e;
@@ -17,7 +16,7 @@ body {
 margin: 0;
 padding: 0;
 background: var(--bg);
-color: var(--black);
+color: var(--white);
 font-family: Verdana, Arial, sans-serif;
 font-size: 14px;
 }
@@ -27,7 +26,7 @@ label {
   margin-top: 12px;
   margin-bottom: 4px;
   font-size: 0.9rem;
-  color: #111111;
+  color: #aaa;
 }
 
 /* =========================
@@ -120,8 +119,8 @@ box-sizing: border-box;
 margin-bottom: 10px;
 padding: 8px;
 
-background: white;
-color: black;
+background: #000;
+color: var(--green);
 
 border-top: 2px solid var(--border-dark);
 border-left: 2px solid var(--border-dark);
@@ -134,7 +133,7 @@ border-radius: 0;
 input:focus,
 select:focus {
 outline: none;
-color: var(--black);
+color: var(--yellow);
 }
 
 /* =========================
@@ -175,7 +174,7 @@ table {
 width: 100%;
 border-collapse: collapse;
 
-background: white;
+background: #111;
 
 border: 2px solid var(--border-light);
 
@@ -185,7 +184,7 @@ margin-top: 10px;
 th {
 background: #333;
 
-color: black;
+color: var(--yellow);
 
 text-align: left;
 
@@ -272,8 +271,8 @@ font-size: 16px;
 
 /*status bar*/
 #status-bar {
-  background: #000080;
-  color: white;
+  background: #333;
+  color: #00ff00;
 
   margin: 0;
   padding: 6px 10px;
