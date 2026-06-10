@@ -10,9 +10,29 @@
 
 <body>
 
+<section id="admin-login" class="login-screen">
+  <form id="admin-login-form" class="login-panel">
+    <h1>Rally Admin</h1>
+    <p class="login-note">Testovací přihlášení pro budoucí napojení na Azure. (heslo - admin)</p>
+
+    <label for="admin-password">Heslo</label>
+    <input
+      id="admin-password"
+      type="password"
+      autocomplete="current-password"
+      placeholder="Zadej heslo">
+
+    <button type="submit">Přihlásit</button>
+    <div id="admin-login-error" class="login-error" role="alert"></div>
+  </form>
+</section>
+
+<main id="admin-app" class="admin-app" hidden>
+
 <div id="status-bar">
   RALLY ADMIN v1.0 | Závod: <span id="current-race-display">-----</span> | Připojeno 
 </div>
+<button id="admin-logout-btn" class="logout-btn" type="button">Odhlásit</button>
 <header>
   <button class="tab-btn active" onclick="showView('race')">ZÁVOD</button>
   <button class="tab-btn" onclick="showView('riders')">ZÁVODNÍCI</button>
@@ -221,13 +241,13 @@
 </div>
 
 
+</main>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script src="./js/supabase.js"></script>
 <script src="./js/common.js"></script>
 <script src="./js/admin.js"></script>
-<!--  -->
- <script src="./js/results.js"></script> 
 
 </body>
 </html>

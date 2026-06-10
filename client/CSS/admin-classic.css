@@ -22,6 +22,55 @@ font-family: Verdana, Arial, sans-serif;
 font-size: 14px;
 }
 
+.login-screen {
+min-height: 100vh;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 16px;
+box-sizing: border-box;
+background: var(--bg);
+}
+
+.login-screen[hidden],
+.admin-app[hidden] {
+display: none !important;
+}
+
+.login-panel {
+width: min(100%, 360px);
+padding: 18px;
+background: var(--panel-dark);
+border-top: 2px solid var(--border-light);
+border-left: 2px solid var(--border-light);
+border-right: 2px solid var(--border-dark);
+border-bottom: 2px solid var(--border-dark);
+}
+
+.login-panel h1 {
+margin: 0 0 8px;
+font-size: 1.35rem;
+text-transform: uppercase;
+}
+
+.login-note {
+margin: 0 0 16px;
+color: #111111;
+line-height: 1.35;
+}
+
+.login-error {
+min-height: 18px;
+margin-top: 10px;
+color: var(--red);
+font-weight: bold;
+}
+
+.logout-btn {
+margin: 8px 10px 0 auto;
+display: block;
+}
+
 label {
   display: block;
   margin-top: 12px;

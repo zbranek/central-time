@@ -4,6 +4,95 @@
 
 let editingRiderId = null;
 let riders = [];
+let currentRaceId = "";
+
+const AUTH_SESSION_KEY = "rally_admin_fake_login";
+const FAKE_ADMIN_PASSWORD = "admin";
+
+const adminAuthProvider = {
+  async signIn(password) {
+    if (password !== FAKE_ADMIN_PASSWORD) {
+      return {
+        ok: false,
+        message: "Neplatné heslo"
+      };
+    }
+
+    sessionStorage.setItem(AUTH_SESSION_KEY, "1");
+    return { ok: true };
+  },
+
+  async signOut() {
+    sessionStorage.removeItem(AUTH_SESSION_KEY);
+  },
+
+  async isAuthenticated() {
+    return sessionStorage.getItem(AUTH_SESSION_KEY) === "1";
+  }
+};
+
+async function initAdminAuth() {
+  const loginScreen = document.getElementById("admin-login");
+  const adminApp = document.getElementById("admin-app");
+  const loginForm = document.getElementById("admin-login-form");
+  const passwordInput = document.getElementById("admin-password");
+  const loginError = document.getElementById("admin-login-error");
+  const logoutButton = document.getElementById("admin-logout-btn");
+
+  const showAdmin = async () => {
+    if (loginScreen) loginScreen.hidden = true;
+    if (adminApp) adminApp.hidden = false;
+    await initAdminData();
+  };
+
+  const showLogin = () => {
+    if (adminApp) adminApp.hidden = true;
+    if (loginScreen) loginScreen.hidden = false;
+    if (passwordInput) {
+      passwordInput.value = "";
+      passwordInput.focus();
+    }
+  };
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (loginError) loginError.textContent = "";
+
+      const result = await adminAuthProvider.signIn(passwordInput ? passwordInput.value : "");
+
+      if (!result.ok) {
+        if (loginError) loginError.textContent = result.message || "Přihlášení se nezdařilo";
+        return;
+      }
+
+      await showAdmin();
+    });
+  }
+
+  if (logoutButton) {
+    logoutButton.addEventListener("click", async () => {
+      await adminAuthProvider.signOut();
+      showLogin();
+    });
+  }
+
+  if (await adminAuthProvider.isAuthenticated()) {
+    await showAdmin();
+  } else {
+    showLogin();
+  }
+}
+
+async function initAdminData() {
+  currentRaceId = getRaceId();
+  window.APP.raceId = currentRaceId;
+
+  updateRaceDisplay();
+  await loadRaceInfo();
+  await loadRiders();
+  await loadItinerary();
+}
 
 //vlozeni cisla zavodu - automat. ulozeni
 
@@ -662,11 +751,5 @@ function getRaceId() {
 //---------------
 
 document.addEventListener("DOMContentLoaded", () => {
-
-  currentRaceId = getRaceId();
-  window.APP.raceId = currentRaceId;
-
-  loadRiders();
+  initAdminAuth();
 });
-
-loadItinerary();
