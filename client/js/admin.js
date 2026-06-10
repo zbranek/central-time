@@ -56,22 +56,25 @@ function showView(id) {
   });
 }
 
-function saveRaceId() {
-  const val = document.getElementById('race-id-input').value.trim();
+async function saveRaceId() {
 
+  const val =
+    document.getElementById('race-id-input')
+      .value.trim();
 
+  if (!val) return;
 
   localStorage.setItem('rally_race_id', val);
-
-  
 
   currentRaceId = val;
   window.APP.raceId = val;
 
+  updateRaceDisplay();
+
+  await loadRaceInfo();
+
   loadRiders();
   loadItinerary();
-  updateRaceDisplay();
-  loadRaceInfo();
 }
 
 function updateRaceDisplay() {
@@ -298,8 +301,9 @@ async function loadRaceInfo() {
     .from("races")
     .select("*")
     .eq("race_id", raceId)
-    .single();
+    .maybeSingle();
 
+  // závod neexistuje -> vyčistit formulář
   if (error || !data) {
 
     document.getElementById("race-name").value = "";
@@ -307,9 +311,13 @@ async function loadRaceInfo() {
     document.getElementById("race-date").value = "";
     document.getElementById("race-organizer").value = "";
 
+    document.getElementById("current-race-display").textContent =
+      raceId;
+
     return;
   }
 
+  // načtení dat do formuláře
   document.getElementById("race-name").value =
     data.race_name || "";
 
@@ -321,6 +329,10 @@ async function loadRaceInfo() {
 
   document.getElementById("race-organizer").value =
     data.organizer || "";
+
+  // horní lišta
+  document.getElementById("current-race-display").textContent =
+    `${data.race_id} | ${data.race_name}`;
 }
 
 // Uložení informací o závodu  ---------------------  

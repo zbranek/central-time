@@ -1,6 +1,6 @@
 /*barvy*/
 :root {
-  --color-1-pismo: #f6ff00;
+  --color-1-pismo: #b8b9a4;
   --color-2-backround: #000000;
   --color-3-border: #232734;
   --color-4-backround2: #c2c2c2;
@@ -36,7 +36,7 @@ body {
 .race-title {
   font-size: 1.1rem;
   font-weight: 800;
-  color: var(var(--color-1-pismo)); /* Moderní modrá místo ostré zelené */
+  color: (var(--color-1-pismo)); /* Moderní modrá místo ostré zelené */
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 10px;
@@ -94,7 +94,7 @@ body {
   font-size: 1.2rem;
   font-weight: 700;
   margin-bottom: 12px;
-  color: --var(var(--color-1-pismo));
+  color: (var(--color-1-pismo));
   border-left: 4px solid var(--color-4-backround2);
   padding-left: 8px;
 }
@@ -111,7 +111,7 @@ table {
 th {
   position: sticky;
   top: 110px; /* Přizpůsobit výšce topbaru */
-  background: --var(var(--color-1-pismo));
+  background: var(--color-1-pismo);
   padding: 10px 12px;
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -139,7 +139,7 @@ tbody tr:hover {
 
 /* Formátování specifických sloupců */
 .col-pos { font-weight: 700; color: #38bdf8; width: 40px; text-align: center; }
-.col-no { font-weight: 600; color: var(var(--color-1-pismo)); width: 40px; text-align: center; background: rgba(255,255,255,0.03); }
+.col-no { font-weight: 600; color: var(--color-1-pismo); width: 40px; text-align: center; background: rgba(255,255,255,0.03); }
 
 /* Posádka a auto */
 .crew-wrapper {

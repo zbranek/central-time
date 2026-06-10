@@ -30,6 +30,22 @@ function formatItineraryTime(isoString) {
   }
 } */
 
+function getRaceId() {
+
+  const raceId =
+    localStorage.getItem("rally_race_id");
+
+  if (
+    !raceId ||
+    raceId === "undefined" ||
+    raceId === "null"
+  ) {
+    return "";
+  }
+
+  return raceId;
+}
+
 
 function saveRaceIdResults() {
 
@@ -113,11 +129,23 @@ document.addEventListener("DOMContentLoaded", () => {
 //nahravani výsledků automat po změně stage
 async function loadStages() {
 
-  const select = document.getElementById("stage-select");
+    const select = document.getElementById("stage-select");
 
-  if (!select) {
+    if (!select) {
     return;
   }
+   const tbody = document.querySelector("#stages-table tbody");
+
+
+
+  if (!tbody) {
+    console.log("stages-table nenalezena");
+    return;
+  }
+
+  
+
+  
 
   const raceId = getRaceId();
   if (!raceId) {
@@ -186,7 +214,15 @@ async function loadStages() {
 
 async function loadResults() {
 
+
+
   const stage = parseInt(document.getElementById("stage-select").value);
+
+   if (isNaN(stage)) {
+    console.warn("Nebyla vybrána žádná RZ");
+    return;
+  }
+
   const raceId = getRaceId();
 
   if (!raceId) {
@@ -458,6 +494,7 @@ async function loadPublicItinerary() {
     document.querySelector("#public-itinerary-table tbody");
 
   if (!tbody) {
+    console.log("public-itinerary nenalezen");
     return;
   }
 
