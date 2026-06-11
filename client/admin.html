@@ -5,7 +5,7 @@
   <title>Rally Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="./css/admin-classic.css">
+  <link rel="stylesheet" href="./css/admin-classic.css">
 </head>
 
 <body>
@@ -28,219 +28,214 @@
 </section>
 
 <main id="admin-app" class="admin-app" hidden>
+  <div class="admin-shell">
+    <div id="status-bar">
+      <strong>RALLY ADMIN</strong>
+      <span>Závod: <span id="current-race-display">-----</span></span>
+      <span>Připojeno</span>
+    </div>
 
-<div id="status-bar">
-  RALLY ADMIN v1.0 | Závod: <span id="current-race-display">-----</span> | Připojeno 
-</div>
-<button id="admin-logout-btn" class="logout-btn" type="button">Odhlásit</button>
-<header>
-  <button class="tab-btn active" onclick="showView('race')">ZÁVOD</button>
-  <button class="tab-btn" onclick="showView('riders')">ZÁVODNÍCI</button>
-  <button class="tab-btn" onclick="showView('itinerary')">ITINERÁŘ</button>
-  <button class="tab-btn" onclick="showView('categories')">KATEGORIE</button>
-</header>
+    <div class="admin-nav-row">
+      <header>
+        <button class="tab-btn active" onclick="showView('race')">Závod</button>
+        <button class="tab-btn" onclick="showView('riders')">Závodníci</button>
+        <button class="tab-btn" onclick="showView('itinerary')">Itinerář</button>
+        <button class="tab-btn" onclick="showView('categories')">Kategorie</button>
+      </header>
 
-<!--<div id="view-race" class="view active"> -->
+      <button id="admin-logout-btn" class="logout-btn" type="button">Odhlásit</button>
+    </div>
 
-  <h2>Závod</h2>
+    <!-- ================= ZAVOD ================= -->
+    <div id="view-race" class="view active">
+      <h2>Závod</h2>
 
-  <label>ID závodu</label>
+      <div class="form-grid compact-grid">
+        <div>
+          <label for="race-id-input">ID závodu</label>
+          <input
+            type="text"
+            id="race-id-input"
+            maxlength="5"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            placeholder="12345">
+        </div>
 
-  <input
-    type="text"
-    id="race-id-input"
-    maxlength="5"
-    inputmode="numeric"
-    pattern="[0-9]*"
-    placeholder="12345">
+        <button onclick="saveRaceId()">Potvrdit ID</button>
+      </div>
 
-  <button onclick="saveRaceId()">✅ Potvrdit</button>
+      <div class="form-grid">
+        <div>
+          <label for="race-name">Název závodu</label>
+          <input id="race-name" placeholder="Název závodu">
+        </div>
 
-</div>
+        <div>
+          <label for="race-location">Místo</label>
+          <input id="race-location" placeholder="Místo konání">
+        </div>
 
-<!-- ================= zavod ================= -->
-<div id="view-race" class="view active">
+        <div>
+          <label for="race-date">Datum</label>
+          <input id="race-date" type="date">
+        </div>
 
-<h2>Závod</h2>
+        <div>
+          <label for="race-organizer">Pořadatel</label>
+          <input id="race-organizer" placeholder="Pořadatel">
+        </div>
+      </div>
 
-<label for="race-name">Název závodu</label>
-<input id="race-name" placeholder="Název závodu">
+      <button onclick="saveRaceInfo()">Uložit údaje o závodu</button>
+    </div>
 
-<label for="race-location">Místo</label>
-<input id="race-location" placeholder="Místo konání">
+    <!-- ================= ZAVODNICI ================= -->
+    <div id="view-riders" class="view">
+      <h2>Závodníci</h2>
 
-<label for="race-date">Datum</label>
-<input id="race-date" type="date">
+      <div class="form-grid">
+        <div>
+          <label for="rider-number">Startovní číslo</label>
+          <input id="rider-number" placeholder="Číslo jezdce">
+        </div>
 
-<label for="race-organizer">Pořadatel</label>
-<input id="race-organizer" placeholder="Pořadatel">
+        <div>
+          <label for="rider-name">Jméno a příjmení</label>
+          <input id="rider-name" placeholder="Jméno a příjmení">
+        </div>
 
+        <div>
+          <label for="co-driver">Posádka jezdec/spolujezdec</label>
+          <input id="co-driver" placeholder="Jezdec/Spolujezdec">
+        </div>
 
+        <div>
+          <label for="nationality">Národnost</label>
+          <input id="nationality" placeholder="CZ/CZ">
+        </div>
 
-  <button onclick="saveRaceInfo()">
-  💾 Uložit údaje o závodu
-</button>
+        <div>
+          <label for="car-brand">Značka vozu</label>
+          <input id="car-brand" placeholder="Škoda">
+        </div>
 
-</div>
+        <div>
+          <label for="car-model">Model vozu</label>
+          <input id="car-model" placeholder="Fabia Rally2">
+        </div>
 
-<!-- puvodni část input čísla zavodu 
+        <div>
+          <label for="category">Kategorie</label>
+          <input id="category" placeholder="RC2">
+        </div>
 
-<div class="race-setup">
-  <label>ID ZÁVODU</label>
-  
-  <input 
-     type="text"
-    id="race-id-input"
-    maxlength="5"
-    inputmode="numeric"
-    pattern="[0-9]*"
-    placeholder="12345"
-  >
+        <div>
+          <label for="team">Tým</label>
+          <input id="team" placeholder="Název týmu">
+        </div>
+      </div>
 
-  <button onclick="saveRaceId()">✅ Potvrdit</button>
-</div>
+      <div id="riders-status" class="status-message">Načítám...</div>
 
-</div>-->
+      <div class="button-row">
+        <button id="save-rider-btn" onclick="addRider()">Přidat jezdce</button>
+      </div>
 
-<!-- ================= ADMINISTRACE ================= -->
-<div id="view-riders" class="view">
+      <div class="import-row">
+        <input type="file" id="csv-file" accept=".csv">
+        <button onclick="importCSV()">Import CSV</button>
+      </div>
 
-<h2>Závodníci</h2>
+      <div class="table-wrap">
+        <table id="riders-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Jezdec</th>
+              <th>Národnost</th>
+              <th>Spolujezdec</th>
+              <th>Auto</th>
+              <th>Kategorie</th>
+              <th>Tým</th>
+              <th>Akce</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
 
-<label for="rider-number">Startovní číslo</label>
-<input
-  id="rider-number"
-  placeholder="Číslo jezdce">
+      <div id="riders-list"></div>
+    </div>
 
-<label for="rider-name">Jméno a příjmení</label>
-<input
-  id="rider-name"
-  placeholder="Jméno a příjmení">
+    <!-- ================= ITINERAR ================= -->
+    <div id="view-itinerary" class="view">
+      <h2>Itinerář</h2>
 
-<label for="co-driver">Posádka jezdec/spolujezdec</label>
-<input
-  id="co-driver"
-  placeholder="Jezdec/Spolujezdec">
+      <div class="form-grid compact-grid">
+        <div>
+          <label for="it-type">Typ bodu</label>
+          <select id="it-type">
+            <option value="stage">RZ</option>
+            <option value="service">Servis</option>
+            <option value="transfer">Přejezd</option>
+          </select>
+        </div>
 
-<label for="nationality">Národnost</label>
-<input
-  id="nationality"
-  placeholder="CZ/CZ ">
+        <div>
+          <label for="it-label">Popis</label>
+          <input id="it-label" placeholder="Popis, např. RZ1 START">
+        </div>
 
-<label for="car-brand">Značka vozu</label>
-<input
-  id="car-brand"
-  placeholder="Škoda">
+        <div>
+          <label for="it-time">Čas</label>
+          <input id="it-time" type="datetime-local">
+        </div>
 
-<label for="car-model">Model vozu</label>
-<input
-  id="car-model"
-  placeholder="Fabia Rally2">
+        <button onclick="addItinerary()">Přidat bod</button>
+      </div>
 
-<label for="category">Kategorie</label>
-<input
-  id="category"
-  placeholder="RC2">
+      <div class="table-wrap">
+        <table id="itinerary-table">
+          <thead>
+            <tr>
+              <th>Typ</th>
+              <th>Popis</th>
+              <th>Čas</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
 
-<label for="team">Tým</label>
-<input
-  id="team"
-  placeholder="Název týmu">
+    <!-- ================= KATEGORIE ================= -->
+    <div id="view-categories" class="view">
+      <h2>Kategorie</h2>
 
-<div id="riders-status" style="margin:10px 0; font-size:0.9rem;"></div>
+      <div class="form-grid compact-grid">
+        <div>
+          <label for="category-name">Název kategorie</label>
+          <input id="category-name" placeholder="Název kategorie">
+        </div>
 
-<button id="save-rider-btn" onclick="addRider()">
-  ➕ Přidat jezdce
-</button>
+        <button>Přidat kategorii</button>
+      </div>
 
-<div style="margin-bottom:15px;">
-  <input type="file" id="csv-file" accept=".csv">
-
-  <button onclick="importCSV()">
-    📥 Import CSV Napr.: Číslo;Závodník;Nár-Nár;Řidič-Spolujezdec;Značka;Model;Kategorie;Team
-  </button>
-</div>
-
-
-
-  <table id="riders-table">
-    <thead>
-      <tr>
-        <th>#</th>
-    <th>Jezdec</th>
-    <th>Národnost</th>
-    <th>Spolujezdec</th>
-    <th>Auto</th>
-    <th>Kategorie</th>
-    <th>Tým</th>
-    <th>Chip</th>
-    <th>❌</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <div id="riders-list"></div>
-  <div id="riders-status">Načítám...</div>
-
-</div>
-
-
-
-<!-- ================= ITINERÁŘ ================= -->
-<div id="view-itinerary" class="view">
-
-  <h2>Itinerář</h2>
-
-  <select id="it-type">
-    <option value="stage">RZ</option>
-    <option value="service">Servis</option>
-    <option value="transfer">Přejezd</option>
-  </select>
-
-  <input id="it-label" placeholder="Popis (např. RZ1 START)">
-  <input id="it-time" type="datetime-local">
-
-  <button onclick="addItinerary()">➕ Přidat bod</button>
-
-  <table id="itinerary-table">
-    <thead>
-      <tr>
-        <th>Typ</th>
-        <th>Popis</th>
-        <th>Čas</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-</div>
-
-<!-- ================= kategorie - zatim neni napojeno na SUPA ================= -->
-<div id="view-categories" class="view">
-
-  <h2>Kategorie</h2>
-
-  <input id="category-name" placeholder="Název kategorie">
-
-  <button>
-    ➕ Přidat kategorii
-  </button>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Kategorie</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id="categories-table"></tbody>
-  </table>
-
-</div>
-
-
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Kategorie</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="categories-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>

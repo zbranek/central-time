@@ -57,7 +57,7 @@ function saveRaceId() {
     currentRaceId = input;
     localStorage.setItem('rally_race_id', input);
     document.getElementById('race-id-status').textContent = "✅ Uloženo: " + input;
-    document.getElementById('race-id-status').style.color = "#15803d";
+    document.getElementById('race-id-status').style.color = "#0f0";
 }
 
 function loadRaceId() {
@@ -66,7 +66,7 @@ function loadRaceId() {
         currentRaceId = saved;
         document.getElementById('race-id-input').value = saved;
         document.getElementById('race-id-status').textContent = "✅ Aktivní: " + saved;
-        document.getElementById('race-id-status').style.color = "#15803d";
+        document.getElementById('race-id-status').style.color = "#0f0";
     }
 }
 
@@ -442,9 +442,9 @@ function renderLog() {
         div.innerHTML = `
     <div onclick="editEventRider(${actualIndex})" style="cursor:pointer">
         <span style="color:#888; font-size:0.8rem;">${currentRaceId || "---"}</span> | 
-        <span style="color: #075985; font-weight: 700;">RZ${e.stage}</span> | 
+        <span style="color: #0f0; opacity: 0.7;">RZ${e.stage}</span> | 
         <strong>${e.type}</strong> | 
-        <span style="color:${e.rider === '?' ? '#dc2626' : '#92400e'}; font-weight:bold;">
+        <span style="color:${e.rider === '?' ? '#f55' : 'yellow'}; font-weight:bold;">
   #${e.rider}
 </span> | 
         ${formatTime(e.time)} ${e.penalty ? " | ⚠ " + e.penalty : ""}
@@ -529,11 +529,6 @@ function showView(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     const target = document.getElementById('view-' + id);
     if (target) target.classList.add('active');
-
-    document.querySelectorAll('.nav-btn').forEach(button => {
-        const onclick = button.getAttribute('onclick') || '';
-        button.classList.toggle('active', onclick.includes(`'${id}'`));
-    });
 }
 
 // Změna čísla RZ
