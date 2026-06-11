@@ -2,144 +2,111 @@
 <html lang="cs">
 <head>
   <meta charset="UTF-8">
-  <title>Results</title>
-
+  <title>Rally Results</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="./css/results.css">
 </head>
 
-<header>
-
-  <button class="tab-btn active"
-          onclick="showView('results')">
-    VÝSLEDKY
-  </button>
-
-  <button class="tab-btn"
-          onclick="showView('itinerary')">
-    ITINERÁŘ
-  </button>
-
-</header>
-
-<!-- <h1>Výsledky</h1> -->
-
-
 <body>
+  <main class="results-app">
+    <div class="results-shell">
+      <div class="topbar">
+        <div class="race-title">Rally Results</div>
 
-<div class="topbar">
+        <div class="controls">
+          <input
+            id="race-id-input"
+            placeholder="Race ID">
 
-  <div class="race-title">
-    RALLY RESULTS
-  </div>
+          <button onclick="saveRaceIdResults()">Načíst závod</button>
 
-  <div class="controls">
+          <select id="stage-select">
+            <option value="1">RZ1</option>
+          </select>
 
-    <input
-      id="race-id-input"
-      placeholder="Race ID"
-    >
-    <button onclick="saveRaceIdResults()">
-  💾 Načíst závod
-  </button>
+          <button onclick="loadResults()">Načíst výsledky</button>
+        </div>
+      </div>
 
-    <select id="stage-select">
-      <option value="1">RZ1</option>
-    </select>
+      <header>
+        <button class="tab-btn active" onclick="showView('results')">Výsledky</button>
+        <button class="tab-btn" onclick="showView('itinerary')">Itinerář</button>
+      </header>
 
-    <button onclick="loadResults()">
-      🔄 Načíst vysledky
-    </button>
+      <div id="view-results" class="view active">
+        <div class="results-layout">
+          <section class="results-panel">
+            <h2 id="stage-title">Výsledky RZ</h2>
 
-  </div>
+            <div class="table-scroll">
+              <table id="results-table">
+                <thead>
+                  <tr>
+                    <th>Poř.</th>
+                    <th>St. č.</th>
+                    <th>Posádka / Vozidlo</th>
+                    <th>Sk.</th>
+                    <th>Celkový čas<br><small>Penalizace</small></th>
+                    <th>Ztráta 1.<br>Ztráta př.</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
 
-</div>
+          <section class="results-panel">
+            <h2>Celkově po RZ</h2>
 
-<div id="view-results" class="view active">
-<div class="results-layout">
+            <div class="table-scroll">
+              <table id="overall-results-table">
+                <thead>
+                  <tr>
+                    <th>Poř.</th>
+                    <th>St. č.</th>
+                    <th>Posádka / Vozidlo</th>
+                    <th>Sk.</th>
+                    <th>Celkový čas<br><small>Penalizace</small></th>
+                    <th>Ztráta 1.<br>Ztráta př.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colspan="6">Overall zatím není aktivní</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
 
-  <!-- LEFT = STAGE -->
-  <section class="results-panel">
+      <div id="view-itinerary" class="view">
+        <section class="results-panel itinerary-panel">
+          <h2>Itinerář závodu</h2>
 
-    <h2 id="stage-title">
-      Výsledky RZ
-    </h2>
+          <div class="table-scroll">
+            <table id="public-itinerary-table">
+              <thead>
+                <tr>
+                  <th>RZ</th>
+                  <th>Název RZ</th>
+                  <th>Čas startu</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
 
-    <!-- results-table podle Gemini -->
-<table id="results-table">
-  <thead>
-    <tr>
-      <th>Poř.</th>
-      <th>St.č.</th>
-      <th>Posádka / Vozidlo</th>
-      <th>Sk.</th>
-      <th>Celkový čas<br><small style="color: #ef4444;">Penalizace</small></th>
-      <th>Ztráta 1.<br>Ztráta př.</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-  </section>
-
-  <!-- RIGHT = OVERALL -->
-  <section class="results-panel">
-
-    <h2>
-      Celkově po RZ
-    </h2>
-
-<table id="overall-results-table">
-  <thead>
-    <tr>
-      <th>Poř.</th>
-      <th>St.č.</th>
-      <th>Posádka / Vozidlo</th>
-      <th>Sk.</th>
-      <th>Celkový čas<br><small style="color: #ef4444;">Penalizace</small></th>
-      <th>Ztráta 1.<br>Ztráta př.</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td colspan="6">
-        Overall zatím není aktivní
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-  </section>
-
-</div>
-</div>
-
-<!-- ================= ITINERÁŘ ================= -->
-
-<div id="view-itinerary" class="view">
-  <div class="results-layout" style="display: block;">
-    <section class="results-panel" style="max-height: calc(100vh - 100px);">
-      <h2>Itinerář závodu</h2>
-      
-      <table id="public-itinerary-table">
-        <thead>
-          <tr>
-            <th>RZ</th>
-            <th>Název RZ</th>
-            <th>Čas startu</th>
-          </tr>
-        </thead>
-        <tbody>
-          </tbody>
-      </table>
-    </section>
-  </div>
-</div>
-
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
-<script src="./js/common.js"></script>
-<script src="./js/supabase.js"></script>
-<script src="./js/results.js"></script>
+  <script src="./js/common.js"></script>
+  <script src="./js/supabase.js"></script>
+  <script src="./js/results.js"></script>
+</body>
+</html>

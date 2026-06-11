@@ -134,19 +134,6 @@ async function loadStages() {
     if (!select) {
     return;
   }
-   const tbody = document.querySelector("#stages-table tbody");
-
-
-
-  if (!tbody) {
-    console.log("stages-table nenalezena");
-    return;
-  }
-
-  
-
-  
-
   const raceId = getRaceId();
   if (!raceId) {
     console.warn("Chybí Race ID");
@@ -466,7 +453,14 @@ function showView(id) {
       b.classList.remove("active")
     );
 
-  event.target.classList.add("active");
+  document
+    .querySelectorAll(".tab-btn")
+    .forEach(button => {
+      const onclick = button.getAttribute("onclick") || "";
+      if (onclick.includes(`'${id}'`)) {
+        button.classList.add("active");
+      }
+    });
 }
 
 // 1. Pomocná funkce pro úpravu formátu (vložte ji kamkoliv do results.js, např. na začátek nebo konec)
