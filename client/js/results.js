@@ -316,176 +316,334 @@ logs.forEach(log => {
   renderOverallResults(finalResults, ridersMap);
 }
 
-//render results změna podle Gemini -  
+//render results s F1 timing tower designem
 function renderResults(results, ridersMap) {
   const tbody = document.querySelector("#results-table tbody");
   tbody.innerHTML = "";
 
+  const leaderTime = results[0] && !results[0].dnf ? results[0].time : null;
+
   results.forEach((r, index) => {
     const rider = ridersMap[r.rider] || {};
     const tr = document.createElement("tr");
 
-    // Zachování vašich medailových tříd a DNF stavů
-    if (r.position === 1) tr.classList.add("gold");
-    if (r.position === 2) tr.classList.add("silver");
-    if (r.position === 3) tr.classList.add("bronze");
     if (r.dnf) tr.classList.add("dnf");
 
-    // Příprava textů posádky a vozu
-    const pozice = r.dnf ? "DNF" : `${r.position}.`;
+    // Position block
+    let posHTML = "";
+    if (r.dnf) {
+      posHTML = `<span class="pos-dnf">DNF</span>`;
+    } else {
+      let posClass = "p4";
+      if (r.position === 1) posClass = "p1";
+      else if (r.position === 2) posClass = "p2";
+      else if (r.position === 3) posClass = "p3";
+      posHTML = `<span class="pos-block ${posClass}">${r.position}</span>`;
+    }
+
+    // Car number
+    const carNumHTML = `<span class="car-num">#${r.rider}</span>`;
+
+    // Crew
     const jmenoJezdce = rider.name || "Neznámý";
     const spolujezdec = rider.co_driver ? ` / ${rider.co_driver}` : "";
     const auto = `${rider.car_brand || ""} ${rider.car_model || ""}`.trim() || "-";
     const kategorie = rider.category || "-";
 
-    // Čas a penalizace (po vzoru Lukov)
-    const hlavniCas = r.dnf ? '<span class="badge-dnf">DNF</span>' : formatMs(r.time);
-    const penalizace = (r.penalty && r.penalty > 0) ? `+${formatMs(r.penalty)}` : "";
+    const crewHTML = `
+      <div class="crew-name">${jmenoJezdce}${spolujezdec}</div>
+      <div class="crew-car">${auto}</div>
+    `;
 
-    // Ztráta na 1. místo
-    const ztrataNaPrvniho = (r.dnf || r.position === 1) ? "-" : "+" + formatMs(r.gap);
+    // Group badge
+    const groupHTML = `<span class="group-badge">${kategorie}</span>`;
+
+    // Time
+    const hlavniCas = r.dnf ? 'DNF' : formatMs(r.time);
+    const penalizace = (r.penalty && r.penalty > 0) ? `+${formatMs(r.penalty)}` : "";
     
-    // Výpočet ztráty na předchozího jezdce (dopočítáváme z pole výsledků)
-    let ztrataNaPredchoziho = "-";
-    if (!r.dnf && index > 0 && !results[index - 1].dnf) {
-      const gapPrev = r.time - results[index - 1].time;
-      ztrataNaPredchoziho = "+" + formatMs(gapPrev);
+    const timeHTML = `
+      <div class="time-main">${hlavniCas}</div>
+      ${penalizace ? `<div class="time-penalty">${penalizace}</div>` : ""}
+    `;
+
+    // Gap
+    let gapHTML = "";
+    if (r.dnf) {
+      gapHTML = `
+        <div class="gap-container">
+          <div class="gap-value">—</div>
+        </div>
+      `;
+    } else if (r.position === 1) {
+      gapHTML = `
+        <div class="gap-container">
+          <div class="gap-value leader">—</div>
+        </div>
+      `;
+    } else {
+      const gapToLeader = r.gap;
+      const gapPercent = Math.max(20, Math.min(100, (gapToLeader / leaderTime) * 100));
+      
+      let gapToPrev = "-";
+      if (index > 0 && !results[index - 1].dnf) {
+        const diff = r.time - results[index - 1].time;
+        gapToPrev = `+${formatMs(diff)}`;
+      }
+
+      gapHTML = `
+        <div class="gap-container">
+          <div class="gap-value">+${formatMs(gapToLeader)}</div>
+          <div class="gap-bar-container">
+            <div class="gap-bar" style="width: ${gapPercent}%"></div>
+          </div>
+          ${gapToPrev !== "-" ? `<div style="font-size: 10px; color: #666; margin-top: 2px;">Př: ${gapToPrev}</div>` : ""}
+        </div>
+      `;
     }
 
-    // Nová štíhlá struktura řádku
     tr.innerHTML = `
-      <td class="col-pos">${pozice}</td>
-      <td class="col-no">#${r.rider}</td>
-      <td class="crew-cell">
-        <div class="crew-names">${jmenoJezdce}${spolujezdec}</div>
-        <div class="crew-car">${auto}</div>
-      </td>
-      <td class="col-cat">${kategorie}</td>
-      <td>
-        <div class="time-block">
-          <div class="time-main">${hlavniCas}</div>
-          ${penalizace ? `<div class="time-penalty" style="color: #ef4444; font-size: 0.8rem; font-weight: bold;">${penalizace}</div>` : ""}
-        </div>
-      </td>
-      <td>
-        <div class="gap-block">
-          <div class="gap-leader">${ztrataNaPrvniho}</div>
-          <div class="gap-prev" style="color: #64748b; font-size: 0.8rem;">${ztrataNaPredchoziho}</div>
-        </div>
-      </td>
+      <td class="col-position">${posHTML}</td>
+      <td class="col-car-num">${carNumHTML}</td>
+      <td class="col-crew">${crewHTML}</td>
+      <td class="col-group">${groupHTML}</td>
+      <td class="col-time">${timeHTML}</td>
+      <td class="col-gap">${gapHTML}</td>
     `;
 
     tbody.appendChild(tr);
   });
 }
 
-//funce overall results podle Gemini  
-//overall výsledky pro pravou část tabulky   
-// Celkové výsledky uděláme identické, aby obě tabulky měly stejný čistý vzhled
+// Render Overall Results s podiem kartami
 function renderOverallResults(results, ridersMap) {
   const tbody = document.querySelector("#overall-results-table tbody");
   tbody.innerHTML = "";
 
+  const leaderTime = results[0] && !results[0].dnf ? results[0].time : null;
+
+  // Podium cards
+  renderPodium(results, ridersMap);
+
   results.forEach((r, index) => {
     const rider = ridersMap[r.rider] || {};
     const tr = document.createElement("tr");
 
     if (r.dnf) tr.classList.add("dnf");
 
-    const pozice = r.dnf ? "DNF" : `${r.position}.`;
+    // Position block
+    let posHTML = "";
+    if (r.dnf) {
+      posHTML = `<span class="pos-dnf">DNF</span>`;
+    } else {
+      let posClass = "p4";
+      if (r.position === 1) posClass = "p1";
+      else if (r.position === 2) posClass = "p2";
+      else if (r.position === 3) posClass = "p3";
+      posHTML = `<span class="pos-block ${posClass}">${r.position}</span>`;
+    }
+
+    // Car number
+    const carNumHTML = `<span class="car-num">#${r.rider}</span>`;
+
+    // Crew
     const jmenoJezdce = rider.name || "Neznámý";
     const spolujezdec = rider.co_driver ? ` / ${rider.co_driver}` : "";
     const auto = `${rider.car_brand || ""} ${rider.car_model || ""}`.trim() || "-";
     const kategorie = rider.category || "-";
 
-    const hlavniCas = r.dnf ? '<span class="badge-dnf">DNF</span>' : formatMs(r.time);
-    const penalizace = (r.penalty && r.penalty > 0) ? `+${formatMs(r.penalty)}` : "";
+    const crewHTML = `
+      <div class="crew-name">${jmenoJezdce}${spolujezdec}</div>
+      <div class="crew-car">${auto}</div>
+    `;
 
-    const ztrataNaPrvniho = (r.dnf || r.position === 1) ? "-" : "+" + formatMs(r.gap);
+    // Group badge
+    const groupHTML = `<span class="group-badge">${kategorie}</span>`;
+
+    // Time
+    const hlavniCas = r.dnf ? 'DNF' : formatMs(r.time);
+    const penalizace = (r.penalty && r.penalty > 0) ? `+${formatMs(r.penalty)}` : "";
     
-    let ztrataNaPredchoziho = "-";
-    if (!r.dnf && index > 0 && !results[index - 1].dnf) {
-      const gapPrev = r.time - results[index - 1].time;
-      ztrataNaPredchoziho = "+" + formatMs(gapPrev);
+    const timeHTML = `
+      <div class="time-main">${hlavniCas}</div>
+      ${penalizace ? `<div class="time-penalty">${penalizace}</div>` : ""}
+    `;
+
+    // Gap
+    let gapHTML = "";
+    if (r.dnf) {
+      gapHTML = `
+        <div class="gap-container">
+          <div class="gap-value">—</div>
+        </div>
+      `;
+    } else if (r.position === 1) {
+      gapHTML = `
+        <div class="gap-container">
+          <div class="gap-value leader">—</div>
+        </div>
+      `;
+    } else {
+      const gapToLeader = r.gap;
+      const gapPercent = Math.max(20, Math.min(100, (gapToLeader / leaderTime) * 100));
+      
+      let gapToPrev = "-";
+      if (index > 0 && !results[index - 1].dnf) {
+        const diff = r.time - results[index - 1].time;
+        gapToPrev = `+${formatMs(diff)}`;
+      }
+
+      gapHTML = `
+        <div class="gap-container">
+          <div class="gap-value">+${formatMs(gapToLeader)}</div>
+          <div class="gap-bar-container">
+            <div class="gap-bar" style="width: ${gapPercent}%"></div>
+          </div>
+          ${gapToPrev !== "-" ? `<div style="font-size: 10px; color: #666; margin-top: 2px;">Př: ${gapToPrev}</div>` : ""}
+        </div>
+      `;
     }
 
     tr.innerHTML = `
-      <td class="col-pos">${pozice}</td>
-      <td class="col-no">#${r.rider}</td>
-      <td class="crew-cell">
-        <div class="crew-names">${jmenoJezdce}${spolujezdec}</div>
-        <div class="crew-car">${auto}</div>
-      </td>
-      <td class="col-cat">${kategorie}</td>
-      <td>
-        <div class="time-block">
-          <div class="time-main">${hlavniCas}</div>
-          ${penalizace ? `<div class="time-penalty" style="color: #ef4444; font-size: 0.8rem; font-weight: bold;">${penalizace}</div>` : ""}
-        </div>
-      </td>
-      <td>
-        <div class="gap-block">
-          <div class="gap-leader">${ztrataNaPrvniho}</div>
-          <div class="gap-prev" style="color: #64748b; font-size: 0.8rem;">${ztrataNaPredchoziho}</div>
-        </div>
-      </td>
+      <td class="col-position">${posHTML}</td>
+      <td class="col-car-num">${carNumHTML}</td>
+      <td class="col-crew">${crewHTML}</td>
+      <td class="col-group">${groupHTML}</td>
+      <td class="col-time">${timeHTML}</td>
+      <td class="col-gap">${gapHTML}</td>
     `;
 
     tbody.appendChild(tr);
   });
 }
 
-function showView(id) {
+// Render Podium Cards (P2 | P1 | P3 order)
+function renderPodium(results, ridersMap) {
+  const container = document.getElementById("podium-container");
+  if (!container) return;
 
-  document
-    .querySelectorAll(".view")
-    .forEach(v =>
-      v.classList.remove("active")
-    );
+  container.innerHTML = "";
 
-  document
-    .getElementById("view-" + id)
-    .classList.add("active");
+  // Get top 3
+  const top3 = results.filter(r => !r.dnf).slice(0, 3);
 
-  document
-    .querySelectorAll(".tab-btn")
-    .forEach(b =>
-      b.classList.remove("active")
-    );
+  // Create cards in order: P2, P1, P3
+  const order = [1, 0, 2]; // indices to pick from top3
 
-  document
-    .querySelectorAll(".tab-btn")
-    .forEach(button => {
-      const onclick = button.getAttribute("onclick") || "";
-      if (onclick.includes(`'${id}'`)) {
-        button.classList.add("active");
-      }
-    });
+  order.forEach(idx => {
+    if (!top3[idx]) return;
+
+    const r = top3[idx];
+    const rider = ridersMap[r.rider] || {};
+    const position = idx + 1;
+
+    let posClass = "p2";
+    if (position === 1) posClass = "p1";
+    else if (position === 3) posClass = "p3";
+
+    const card = document.createElement("div");
+    card.className = `podium-card ${posClass}`;
+
+    const jmenoJezdce = rider.name || "Neznámý";
+    const spolujezdec = rider.co_driver ? ` / ${rider.co_driver}` : "";
+    const cas = formatMs(r.time);
+
+    card.innerHTML = `
+      <div class="podium-rank ${posClass}">P${position}</div>
+      <div class="podium-body">
+        <div class="podium-car-num">#${r.rider}</div>
+        <div class="podium-driver">${jmenoJezdce}</div>
+        ${spolujezdec ? `<div style="font-size: 11px; color: #aaa;">${spolujezdec}</div>` : ""}
+        <div class="podium-time">${cas}</div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
 }
 
-// 1. Pomocná funkce pro úpravu formátu (vložte ji kamkoliv do results.js, např. na začátek nebo konec)
+function showView(id) {
+  // Hide all views
+  document.querySelectorAll(".view").forEach(v => {
+    v.classList.remove("active");
+  });
+
+  // Show selected view
+  const viewElement = document.getElementById("view-" + id);
+  if (viewElement) {
+    viewElement.classList.add("active");
+  }
+
+  // Update tab buttons
+  document.querySelectorAll(".nav-tab").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  // Find and activate correct button
+  document.querySelectorAll(".nav-tab").forEach(button => {
+    const onclick = button.getAttribute("onclick") || "";
+    if (onclick.includes(`'${id}'`)) {
+      button.classList.add("active");
+    }
+  });
+}
+
+// Formátování data a času pro itinerář
 function formatItineraryTime(isoString) {
   if (!isoString) return "-";
   
   try {
-    // Rozdělíme "2026-05-11T15:30:00" na datum a čas
     const [datePart, timePart] = isoString.split("T");
     const [year, month, day] = datePart.split("-");
     const [hours, minutes] = timePart.split(":");
     
-    // Výsledný formát: "11.05.2026 -- 15:30"
     return `${day}.${month}.${year} -- ${hours}:${minutes}`;
   } catch (e) {
-    // Kdyby formát v DB z nějakého důvodu neseděl, vrátíme původní text, ať kód nespadne
     return isoString;
   }
 }
 
-// 2. Vaše upravená funkce s nasazeným formátováním
-async function loadPublicItinerary() {
+// Get status badge class
+function getStatusBadgeClass(status) {
+  if (!status) return "status-planned";
+  
+  status = status.toLowerCase().trim();
+  
+  if (status.includes("hotovo") || status.includes("completed") || status.includes("finish")) {
+    return "status-done";
+  }
+  if (status.includes("aktivní") || status.includes("active") || status.includes("running")) {
+    return "status-active";
+  }
+  if (status.includes("plánováno") || status.includes("planned") || status.includes("upcoming")) {
+    return "status-planned";
+  }
+  
+  return "status-planned";
+}
 
-  const tbody =
-    document.querySelector("#public-itinerary-table tbody");
+// Get status badge text
+function getStatusBadgeText(status) {
+  if (!status) return "Plánováno";
+  
+  status = status.toLowerCase().trim();
+  
+  if (status.includes("hotovo") || status.includes("completed") || status.includes("finish")) {
+    return "Hotovo";
+  }
+  if (status.includes("aktivní") || status.includes("active") || status.includes("running")) {
+    return "Aktivní";
+  }
+  if (status.includes("plánováno") || status.includes("planned") || status.includes("upcoming")) {
+    return "Plánováno";
+  }
+  
+  return "Plánováno";
+}
+
+// Load public itinerary with status badges
+async function loadPublicItinerary() {
+  const tbody = document.querySelector("#public-itinerary-table tbody");
 
   if (!tbody) {
     console.log("public-itinerary nenalezen");
@@ -494,14 +652,11 @@ async function loadPublicItinerary() {
 
   const raceId = getRaceId();
 
-  const { data, error } =
-    await supabaseClient
-      .from("stages")
-      .select("*")
-      .eq("race_id", raceId)
-      .order("start_time", {
-        ascending: true
-      });
+  const { data, error } = await supabaseClient
+    .from("stages")
+    .select("*")
+    .eq("race_id", raceId)
+    .order("start_time", { ascending: true });
 
   if (error) {
     console.error(error);
@@ -510,15 +665,27 @@ async function loadPublicItinerary() {
 
   tbody.innerHTML = "";
 
-  data.forEach(stage => {
+  data.forEach((stage, idx) => {
     const tr = document.createElement("tr");
 
+    const stageNum = stage.stage_number || (idx + 1);
+    const stageName = stage.name || "Neznámá RZ";
+    const stageTime = formatItineraryTime(stage.start_time);
+    const statusClass = getStatusBadgeClass(stage.status);
+    const statusText = getStatusBadgeText(stage.status);
+
     tr.innerHTML = `
-      <td>${stage.status || ""}</td>
-      <td>${stage.name || ""}</td>
-      <td>${formatItineraryTime(stage.start_time)}</td>
+      <td class="col-stage-num">
+        <span class="stage-badge">RZ${stageNum}</span>
+      </td>
+      <td class="col-stage-name">${stageName}</td>
+      <td class="col-stage-time">${stageTime}</td>
+      <td class="col-stage-status">
+        <span class="status-badge ${statusClass}">${statusText}</span>
+      </td>
     `;
 
     tbody.appendChild(tr);
   });
 }
+
