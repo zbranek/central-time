@@ -48,74 +48,65 @@
 
       <!-- NAVIGATION TABS -->
       <nav class="nav-bar">
-        <button class="nav-tab active" onclick="showView('rz-results')">Výsledky RZ</button>
-        <button class="nav-tab" onclick="showView('overall')">Celkově</button>
+        <button class="nav-tab active" onclick="showView('results')">Výsledky</button>
         <button class="nav-tab" onclick="showView('itinerary')">Itinerář</button>
       </nav>
 
-      <!-- VIEW: RZ RESULTS -->
-      <div id="view-rz-results" class="view active">
-        <section class="results-panel">
-          <div class="section-label">
-            <span class="label-text">VÝSLEDKY RZ</span>
-          </div>
-
-          <div class="table-wrapper">
-            <table id="results-table" class="results-table">
-              <thead>
-                <tr>
-                  <th class="col-position">Poř.</th>
-                  <th class="col-car-num">St. č.</th>
-                  <th class="col-crew">Posádka / Vozidlo</th>
-                  <th class="col-group">Sk.</th>
-                  <th class="col-time">Čas / Penalizace</th>
-                  <th class="col-gap">Ztráta</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td colspan="6" class="empty-message">Vyberte RZ a klikněte "Načíst výsledky"</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-
-      <!-- VIEW: OVERALL STANDINGS -->
-      <div id="view-overall" class="view">
-        <section class="results-panel">
-          <div class="section-label">
-            <span class="label-text">CELKOVĚ PO RZ</span>
-          </div>
-
-          <!-- PODIUM CARDS -->
-          <div class="podium-section">
-            <div id="podium-container" class="podium-cards">
-              <!-- Dynamically populated -->
+      <!-- VIEW: RESULTS -->
+      <div id="view-results" class="view active">
+        <div class="results-grid">
+          <section class="results-panel">
+            <div class="section-label">
+              <span class="label-text">VÝSLEDKY RZ</span>
             </div>
-          </div>
 
-          <div class="table-wrapper">
-            <table id="overall-results-table" class="results-table">
-              <thead>
-                <tr>
-                  <th class="col-position">Poř.</th>
-                  <th class="col-car-num">St. č.</th>
-                  <th class="col-crew">Posádka / Vozidlo</th>
-                  <th class="col-group">Sk.</th>
-                  <th class="col-time">Čas / Penalizace</th>
-                  <th class="col-gap">Ztráta</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td colspan="6" class="empty-message">Celkově zatím není aktivní</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+            <div class="table-wrapper">
+              <table id="results-table" class="results-table">
+                <thead>
+                  <tr>
+                    <th class="col-position">Poř.</th>
+                    <th class="col-car-num">St. č.</th>
+                    <th class="col-crew">Posádka / Vozidlo</th>
+                    <th class="col-group">Sk.</th>
+                    <th class="col-time">Čas / Penalizace</th>
+                    <th class="col-gap">Ztráta</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colspan="6" class="empty-message">Vyberte RZ a klikněte "Načíst výsledky"</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="results-panel">
+            <div class="section-label">
+              <span class="label-text">CELKOVĚ PO RZ</span>
+            </div>
+
+            <div class="table-wrapper">
+              <table id="overall-results-table" class="results-table">
+                <thead>
+                  <tr>
+                    <th class="col-position">Poř.</th>
+                    <th class="col-car-num">St. č.</th>
+                    <th class="col-crew">Posádka / Vozidlo</th>
+                    <th class="col-group">Sk.</th>
+                    <th class="col-time">Čas / Penalizace</th>
+                    <th class="col-gap">Ztráta</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colspan="6" class="empty-message">Celkově zatím není aktivní</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
       </div>
 
       <!-- VIEW: ITINERARY -->
@@ -151,6 +142,7 @@
 
   <script src="./js/common.js"></script>
   <script src="./js/supabase.js"></script>
+  <script src="./js/rally-calculator.js"></script>
   <script src="./js/results.js"></script>
 </body>
 </html>
