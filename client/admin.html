@@ -41,6 +41,7 @@
         <button class="tab-btn" onclick="showView('riders')">Závodníci</button>
         <button class="tab-btn" onclick="showView('itinerary')">Itinerář</button>
         <button class="tab-btn" onclick="showView('categories')">Kategorie</button>
+        <button class="tab-btn" onclick="showView('outputs')">Výstupy</button>
       </header>
 
       <button id="admin-logout-btn" class="logout-btn" type="button">Odhlásit</button>
@@ -235,10 +236,24 @@
         </table>
       </div>
     </div>
+
+    <!-- ================= VYSTUPY ================= -->
+    <div id="view-outputs" class="view">
+      <h2>Výstupy</h2>
+
+      <div class="button-row">
+        <button onclick="exportStartovniListina()">Export Startovní listina</button>
+        <button onclick="exportItinerar()">Export Itinerář</button>
+        <button onclick="exportKartaZavodnika()">Export Karta závodníka</button>
+      </div>
+    </div>
   </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
 <script src="./js/supabase.js"></script>
 <script src="./js/common.js"></script>

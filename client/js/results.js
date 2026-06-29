@@ -71,39 +71,7 @@ function saveRaceIdResults() {
 }
 
 
-//DNF 
-function parsePenalty(code) {
-  if (!code) return { time: 0, dnf: false };
 
-  code = code.trim().toUpperCase();
-
-  // 🚨 DNF
-  if (code === "DNF") {
-    return { time: 0, dnf: true };
-  }
-
-  // ➕ odstranění "+"
-  if (code.startsWith("+")) {
-    code = code.substring(1);
-  }
-
-  // ⏱ sekundy (výchozí)
-  if (!isNaN(code)) {
-    return { time: parseInt(code) * 1000, dnf: false };
-  }
-
-  // ⏱ "10S"
-  if (code.endsWith("S")) {
-    return { time: parseInt(code) * 1000, dnf: false };
-  }
-
-  // ⏱ "1M"
-  if (code.endsWith("M")) {
-    return { time: parseInt(code) * 60000, dnf: false };
-  }
-
-  return { time: 0, dnf: false };
-}
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -217,8 +185,8 @@ async function loadResults() {
     return;
   }
 
-  // 1️⃣ logy
-  const { data: logs, error } = await supabaseClient
+  // 1️⃣ Stage logs (for current stage results)
+  const { data: stageLogs, error } = await supabaseClient
     .from("rally_logs")
     .select("*")
     .eq("race_id", raceId)
@@ -230,7 +198,19 @@ async function loadResults() {
     return;
   }
 
-  // 2️⃣ riders
+  // 2️⃣ Overall logs (for cumulative rally standings up to current stage)
+  const { data: overallLogs, error: overallError } = await supabaseClient
+    .from("rally_logs")
+    .select("*")
+    .eq("race_id", raceId)
+    .lte("stage", stage);
+
+  if (overallError) {
+    console.error(overallError);
+    // Continue anyway, use stage logs as fallback
+  }
+
+  // 3️⃣ riders
   const { data: riders } = await supabaseClient
     .from("riders")
     .select("*")
@@ -242,325 +222,136 @@ async function loadResults() {
 
   });
 
-  // 3️⃣ výpočet
- const map = {};
+  // Calculate stage results (current stage only)
+  const stageResults = calculateStageResults(stageLogs);
 
-logs.forEach(log => {
-  const rider = String(log.rider);
-  if (!rider) return;
+  // Calculate overall results (cumulative across stages 1 to current stage)
+  const overallResults = calculateOverallResults(overallLogs, stage);
 
-  if (!map[rider]) {
-    map[rider] = {
-      rider,
-      start: null,
-      finish: null,
-      penalty: 0,
-      dnf: false
-    };
-  }
+  renderResults(stageResults, ridersMap);
+  renderOverallResults(overallResults, ridersMap);
+}
 
-  if (log.type === "START") {
-    map[rider].start = log.time_ms;
-  }
 
-  if (log.type === "FINISH") {
-    map[rider].finish = log.time_ms;
+/**
+ * Generic table renderer for results tables
+ * Renders any results table with consistent formatting
+ * @param {string} tableSelector - CSS selector for the table (e.g., "#results-table")
+ * @param {array} results - Sorted array of result objects
+ * @param {object} ridersMap - Map of rider_number to rider objects
+ */
+function renderTable(tableSelector, results, ridersMap) {
+  const tbody = document.querySelector(`${tableSelector} tbody`);
+  tbody.innerHTML = "";
 
-    if (log.penalty) {
-      const p = parsePenalty(log.penalty);
+  const leaderTime = results[0] && !results[0].dnf ? results[0].time : null;
 
-      map[rider].penalty += p.time;
+  results.forEach((r, index) => {
+    const rider = ridersMap[r.rider] || {};
+    const tr = document.createElement("tr");
 
-      if (p.dnf) {
-        map[rider].dnf = true;
-      }
+    if (r.dnf) tr.classList.add("dnf");
+
+    // Position block
+    let posHTML = "";
+    if (r.dnf) {
+      posHTML = `<span class="pos-dnf">DNF</span>`;
+    } else {
+      let posClass = "p4";
+      if (r.position === 1) posClass = "p1";
+      else if (r.position === 2) posClass = "p2";
+      else if (r.position === 3) posClass = "p3";
+      posHTML = `<span class="pos-block ${posClass}">${r.position}</span>`;
     }
-  }
-});
 
-  // 4️⃣ výsledky
-  let results = Object.values(map).map(r => {
+    // Car number
+    const carNumHTML = `<span class="car-num">#${r.rider}</span>`;
 
-   if (!r.start || !r.finish || r.dnf) {
-  return {
-    rider: r.rider,
-    dnf: true
-  };
+    // Crew
+    const jmenoJezdce = rider.name || "Neznámý";
+    const spolujezdec = rider.co_driver ? ` / ${rider.co_driver}` : "";
+    const auto = `${rider.car_brand || ""} ${rider.car_model || ""}`.trim() || "-";
+    const kategorie = rider.category || "-";
+
+    const crewHTML = `
+      <div class="crew-name">${jmenoJezdce}${spolujezdec}</div>
+      <div class="crew-car">${auto}</div>
+    `;
+
+    // Group badge
+    const groupHTML = `<span class="group-badge">${kategorie}</span>`;
+
+    // Time
+    const hlavniCas = r.dnf ? 'DNF' : formatMs(r.time);
+    const penalizace = (r.penalty && r.penalty > 0) ? `+${formatMs(r.penalty)}` : "";
+    
+    const timeHTML = `
+      <div class="time-main">${hlavniCas}</div>
+      ${penalizace ? `<div class="time-penalty">${penalizace}</div>` : ""}
+    `;
+
+    // Gap
+    let gapHTML = "";
+    if (r.dnf) {
+      gapHTML = `
+        <div class="gap-container">
+          <div class="gap-value">—</div>
+        </div>
+      `;
+    } else if (r.position === 1) {
+      gapHTML = `
+        <div class="gap-container">
+          <div class="gap-value leader">—</div>
+        </div>
+      `;
+    } else {
+      const gapToLeader = r.gap;
+      const gapPercent = Math.max(20, Math.min(100, (gapToLeader / leaderTime) * 100));
+      
+      let gapToPrev = "-";
+      if (index > 0 && !results[index - 1].dnf) {
+        const diff = r.time - results[index - 1].time;
+        gapToPrev = `+${formatMs(diff)}`;
+      }
+
+      gapHTML = `
+        <div class="gap-container">
+          <div class="gap-value">+${formatMs(gapToLeader)}</div>
+          <div class="gap-bar-container">
+            <div class="gap-bar" style="width: ${gapPercent}%"></div>
+          </div>
+          ${gapToPrev !== "-" ? `<div style="font-size: 10px; color: #666; margin-top: 2px;">Př: ${gapToPrev}</div>` : ""}
+        </div>
+      `;
+    }
+
+    tr.innerHTML = `
+      <td class="col-position">${posHTML}</td>
+      <td class="col-car-num">${carNumHTML}</td>
+      <td class="col-crew">${crewHTML}</td>
+      <td class="col-group">${groupHTML}</td>
+      <td class="col-time">${timeHTML}</td>
+      <td class="col-gap">${gapHTML}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
 }
 
-    return {
-      rider: r.rider,
-      time: r.finish - r.start + r.penalty,
-      penalty: r.penalty,
-      dnf: false
-    };
-  });
-
-  // 5️⃣ třídění
-  const classified = results
-    .filter(r => !r.dnf)
-    .sort((a, b) => a.time - b.time);
-
-  const dnf = results.filter(r => r.dnf);
-
-  // 6️⃣ pořadí
-  classified.forEach((r, i) => {
-    r.position = i + 1;
-    r.gap = i === 0 ? 0 : r.time - classified[0].time;
-  });
-
-  // 7️⃣ final
-  const finalResults = [...classified, ...dnf];
-
-  renderResults(finalResults, ridersMap);
-  renderOverallResults(finalResults, ridersMap);
-}
-
-//render results s F1 timing tower designem
+/**
+ * Render stage results table
+ */
 function renderResults(results, ridersMap) {
-  const tbody = document.querySelector("#results-table tbody");
-  tbody.innerHTML = "";
-
-  const leaderTime = results[0] && !results[0].dnf ? results[0].time : null;
-
-  results.forEach((r, index) => {
-    const rider = ridersMap[r.rider] || {};
-    const tr = document.createElement("tr");
-
-    if (r.dnf) tr.classList.add("dnf");
-
-    // Position block
-    let posHTML = "";
-    if (r.dnf) {
-      posHTML = `<span class="pos-dnf">DNF</span>`;
-    } else {
-      let posClass = "p4";
-      if (r.position === 1) posClass = "p1";
-      else if (r.position === 2) posClass = "p2";
-      else if (r.position === 3) posClass = "p3";
-      posHTML = `<span class="pos-block ${posClass}">${r.position}</span>`;
-    }
-
-    // Car number
-    const carNumHTML = `<span class="car-num">#${r.rider}</span>`;
-
-    // Crew
-    const jmenoJezdce = rider.name || "Neznámý";
-    const spolujezdec = rider.co_driver ? ` / ${rider.co_driver}` : "";
-    const auto = `${rider.car_brand || ""} ${rider.car_model || ""}`.trim() || "-";
-    const kategorie = rider.category || "-";
-
-    const crewHTML = `
-      <div class="crew-name">${jmenoJezdce}${spolujezdec}</div>
-      <div class="crew-car">${auto}</div>
-    `;
-
-    // Group badge
-    const groupHTML = `<span class="group-badge">${kategorie}</span>`;
-
-    // Time
-    const hlavniCas = r.dnf ? 'DNF' : formatMs(r.time);
-    const penalizace = (r.penalty && r.penalty > 0) ? `+${formatMs(r.penalty)}` : "";
-    
-    const timeHTML = `
-      <div class="time-main">${hlavniCas}</div>
-      ${penalizace ? `<div class="time-penalty">${penalizace}</div>` : ""}
-    `;
-
-    // Gap
-    let gapHTML = "";
-    if (r.dnf) {
-      gapHTML = `
-        <div class="gap-container">
-          <div class="gap-value">—</div>
-        </div>
-      `;
-    } else if (r.position === 1) {
-      gapHTML = `
-        <div class="gap-container">
-          <div class="gap-value leader">—</div>
-        </div>
-      `;
-    } else {
-      const gapToLeader = r.gap;
-      const gapPercent = Math.max(20, Math.min(100, (gapToLeader / leaderTime) * 100));
-      
-      let gapToPrev = "-";
-      if (index > 0 && !results[index - 1].dnf) {
-        const diff = r.time - results[index - 1].time;
-        gapToPrev = `+${formatMs(diff)}`;
-      }
-
-      gapHTML = `
-        <div class="gap-container">
-          <div class="gap-value">+${formatMs(gapToLeader)}</div>
-          <div class="gap-bar-container">
-            <div class="gap-bar" style="width: ${gapPercent}%"></div>
-          </div>
-          ${gapToPrev !== "-" ? `<div style="font-size: 10px; color: #666; margin-top: 2px;">Př: ${gapToPrev}</div>` : ""}
-        </div>
-      `;
-    }
-
-    tr.innerHTML = `
-      <td class="col-position">${posHTML}</td>
-      <td class="col-car-num">${carNumHTML}</td>
-      <td class="col-crew">${crewHTML}</td>
-      <td class="col-group">${groupHTML}</td>
-      <td class="col-time">${timeHTML}</td>
-      <td class="col-gap">${gapHTML}</td>
-    `;
-
-    tbody.appendChild(tr);
-  });
+  renderTable("#results-table", results, ridersMap);
 }
 
-// Render Overall Results s podiem kartami
+/**
+ * Render overall standings table
+ */
 function renderOverallResults(results, ridersMap) {
-  const tbody = document.querySelector("#overall-results-table tbody");
-  tbody.innerHTML = "";
-
-  const leaderTime = results[0] && !results[0].dnf ? results[0].time : null;
-
-  // Podium cards
-  renderPodium(results, ridersMap);
-
-  results.forEach((r, index) => {
-    const rider = ridersMap[r.rider] || {};
-    const tr = document.createElement("tr");
-
-    if (r.dnf) tr.classList.add("dnf");
-
-    // Position block
-    let posHTML = "";
-    if (r.dnf) {
-      posHTML = `<span class="pos-dnf">DNF</span>`;
-    } else {
-      let posClass = "p4";
-      if (r.position === 1) posClass = "p1";
-      else if (r.position === 2) posClass = "p2";
-      else if (r.position === 3) posClass = "p3";
-      posHTML = `<span class="pos-block ${posClass}">${r.position}</span>`;
-    }
-
-    // Car number
-    const carNumHTML = `<span class="car-num">#${r.rider}</span>`;
-
-    // Crew
-    const jmenoJezdce = rider.name || "Neznámý";
-    const spolujezdec = rider.co_driver ? ` / ${rider.co_driver}` : "";
-    const auto = `${rider.car_brand || ""} ${rider.car_model || ""}`.trim() || "-";
-    const kategorie = rider.category || "-";
-
-    const crewHTML = `
-      <div class="crew-name">${jmenoJezdce}${spolujezdec}</div>
-      <div class="crew-car">${auto}</div>
-    `;
-
-    // Group badge
-    const groupHTML = `<span class="group-badge">${kategorie}</span>`;
-
-    // Time
-    const hlavniCas = r.dnf ? 'DNF' : formatMs(r.time);
-    const penalizace = (r.penalty && r.penalty > 0) ? `+${formatMs(r.penalty)}` : "";
-    
-    const timeHTML = `
-      <div class="time-main">${hlavniCas}</div>
-      ${penalizace ? `<div class="time-penalty">${penalizace}</div>` : ""}
-    `;
-
-    // Gap
-    let gapHTML = "";
-    if (r.dnf) {
-      gapHTML = `
-        <div class="gap-container">
-          <div class="gap-value">—</div>
-        </div>
-      `;
-    } else if (r.position === 1) {
-      gapHTML = `
-        <div class="gap-container">
-          <div class="gap-value leader">—</div>
-        </div>
-      `;
-    } else {
-      const gapToLeader = r.gap;
-      const gapPercent = Math.max(20, Math.min(100, (gapToLeader / leaderTime) * 100));
-      
-      let gapToPrev = "-";
-      if (index > 0 && !results[index - 1].dnf) {
-        const diff = r.time - results[index - 1].time;
-        gapToPrev = `+${formatMs(diff)}`;
-      }
-
-      gapHTML = `
-        <div class="gap-container">
-          <div class="gap-value">+${formatMs(gapToLeader)}</div>
-          <div class="gap-bar-container">
-            <div class="gap-bar" style="width: ${gapPercent}%"></div>
-          </div>
-          ${gapToPrev !== "-" ? `<div style="font-size: 10px; color: #666; margin-top: 2px;">Př: ${gapToPrev}</div>` : ""}
-        </div>
-      `;
-    }
-
-    tr.innerHTML = `
-      <td class="col-position">${posHTML}</td>
-      <td class="col-car-num">${carNumHTML}</td>
-      <td class="col-crew">${crewHTML}</td>
-      <td class="col-group">${groupHTML}</td>
-      <td class="col-time">${timeHTML}</td>
-      <td class="col-gap">${gapHTML}</td>
-    `;
-
-    tbody.appendChild(tr);
-  });
+  renderTable("#overall-results-table", results, ridersMap);
 }
 
-// Render Podium Cards (P2 | P1 | P3 order)
-function renderPodium(results, ridersMap) {
-  const container = document.getElementById("podium-container");
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  // Get top 3
-  const top3 = results.filter(r => !r.dnf).slice(0, 3);
-
-  // Create cards in order: P2, P1, P3
-  const order = [1, 0, 2]; // indices to pick from top3
-
-  order.forEach(idx => {
-    if (!top3[idx]) return;
-
-    const r = top3[idx];
-    const rider = ridersMap[r.rider] || {};
-    const position = idx + 1;
-
-    let posClass = "p2";
-    if (position === 1) posClass = "p1";
-    else if (position === 3) posClass = "p3";
-
-    const card = document.createElement("div");
-    card.className = `podium-card ${posClass}`;
-
-    const jmenoJezdce = rider.name || "Neznámý";
-    const spolujezdec = rider.co_driver ? ` / ${rider.co_driver}` : "";
-    const cas = formatMs(r.time);
-
-    card.innerHTML = `
-      <div class="podium-rank ${posClass}">P${position}</div>
-      <div class="podium-body">
-        <div class="podium-car-num">#${r.rider}</div>
-        <div class="podium-driver">${jmenoJezdce}</div>
-        ${spolujezdec ? `<div style="font-size: 11px; color: #aaa;">${spolujezdec}</div>` : ""}
-        <div class="podium-time">${cas}</div>
-      </div>
-    `;
-
-    container.appendChild(card);
-  });
-}
 
 function showView(id) {
   // Hide all views

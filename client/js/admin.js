@@ -750,6 +750,305 @@ function getRaceId() {
 
 //---------------
 
+/*********************************
+ * VÝSTUPY - EXPORT
+ *********************************/
+
+async function exportStartovniListina() {
+  const raceId = getRaceId();
+  
+  if (!raceId || raceId === "00000") {
+    alert("Nejprve nastav ID závodu");
+    return;
+  }
+
+  const { data: raceData } = await supabaseClient
+    .from("races")
+    .select("*")
+    .eq("race_id", raceId)
+    .maybeSingle();
+
+  const { data: riders } = await supabaseClient
+    .from("riders")
+    .select("*")
+    .eq("race_id", raceId)
+    .order("rider_number", { ascending: true });
+
+  if (!riders || riders.length === 0) {
+    alert("Žádní jezdci k exportu");
+    return;
+  }
+
+  // Vytvoření dočasného HTML prvku pro renderování
+  const container = document.createElement("div");
+  container.style.width = "1000px";
+  container.style.padding = "20px";
+  container.style.fontFamily = "Arial, sans-serif";
+  container.style.fontSize = "14px";
+  container.style.lineHeight = "1.6";
+  container.style.backgroundColor = "white";
+  
+  // HTML obsah
+  let html = `
+    <div style="margin-bottom: 20px;">
+      <h1 style="font-size: 28px; margin: 10px 0; text-align: center;">STARTOVNÍ LISTINA</h1>
+      <p style="font-size: 16px; margin: 5px 0;"><strong>Závod:</strong> ${raceData?.race_name || "-"}</p>
+      <p style="font-size: 16px; margin: 5px 0;"><strong>Místo:</strong> ${raceData?.location || "-"}</p>
+      <p style="font-size: 16px; margin: 5px 0;"><strong>Datum:</strong> ${raceData?.race_date || "-"}</p>
+    </div>
+    
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+      <thead>
+        <tr style="background-color: #2980b9; color: white;">
+          <th style="border: 1px solid #bbb; padding: 12px; text-align: left; font-weight: bold; font-size: 14px;">Č.</th>
+          <th style="border: 1px solid #bbb; padding: 12px; text-align: left; font-weight: bold; font-size: 14px;">Jezdec</th>
+          <th style="border: 1px solid #bbb; padding: 12px; text-align: left; font-weight: bold; font-size: 14px;">Spolujezdec</th>
+          <th style="border: 1px solid #bbb; padding: 12px; text-align: left; font-weight: bold; font-size: 14px;">Národnost</th>
+          <th style="border: 1px solid #bbb; padding: 12px; text-align: left; font-weight: bold; font-size: 14px;">Auto</th>
+          <th style="border: 1px solid #bbb; padding: 12px; text-align: left; font-weight: bold; font-size: 14px;">Kategorie</th>
+          <th style="border: 1px solid #bbb; padding: 12px; text-align: left; font-weight: bold; font-size: 14px;">Tým</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  
+  riders.forEach((r, index) => {
+    const bgColor = index % 2 === 0 ? "white" : "#f5f5f5";
+    html += `
+      <tr style="background-color: ${bgColor};">
+        <td style="border: 1px solid #bbb; padding: 10px; font-size: 14px;">${r.rider_number || "-"}</td>
+        <td style="border: 1px solid #bbb; padding: 10px; font-size: 14px;">${r.name || "-"}</td>
+        <td style="border: 1px solid #bbb; padding: 10px; font-size: 14px;">${r.co_driver || "-"}</td>
+        <td style="border: 1px solid #bbb; padding: 10px; font-size: 14px;">${r.nationality || "-"}</td>
+        <td style="border: 1px solid #bbb; padding: 10px; font-size: 14px;">${`${r.car_brand || ""} ${r.car_model || ""}`.trim() || "-"}</td>
+        <td style="border: 1px solid #bbb; padding: 10px; font-size: 14px;">${r.category || "-"}</td>
+        <td style="border: 1px solid #bbb; padding: 10px; font-size: 14px;">${r.team || "-"}</td>
+      </tr>
+    `;
+  });
+  
+  html += `
+      </tbody>
+    </table>
+  `;
+  
+  container.innerHTML = html;
+  document.body.appendChild(container);
+  
+  // Render do canvas a PDF
+  try {
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff"
+    });
+    
+    const { jsPDF } = window.jspdf;
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4"
+    });
+    
+    const imgWidth = 210;
+    const pageHeight = 297;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+    
+    // Přidat obrázky na stránky (pokud je obsah delší)
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+    
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+    
+    pdf.save(`Startovni_listina_${raceId}.pdf`);
+  } catch (error) {
+    console.error("Chyba při vytváření PDF:", error);
+    alert("Chyba při exportu PDF");
+  } finally {
+    document.body.removeChild(container);
+  }
+}
+
+async function exportItinerar() {
+  const raceId = getRaceId();
+  
+  if (!raceId || raceId === "00000") {
+    alert("Nejprve nastav ID závodu");
+    return;
+  }
+
+  const { data: raceData } = await supabaseClient
+    .from("races")
+    .select("*")
+    .eq("race_id", raceId)
+    .maybeSingle();
+
+  const { data: stages } = await supabaseClient
+    .from("stages")
+    .select("*")
+    .eq("race_id", raceId)
+    .order("start_time", { ascending: true });
+
+  if (!stages || stages.length === 0) {
+    alert("Žádný itinerář k exportu");
+    return;
+  }
+
+  // Vytvoření dočasného HTML prvku pro renderování
+  const container = document.createElement("div");
+  container.style.width = "1000px";
+  container.style.padding = "20px";
+  container.style.fontFamily = "Arial, sans-serif";
+  container.style.fontSize = "14px";
+  container.style.lineHeight = "1.6";
+  container.style.backgroundColor = "white";
+  
+  // HTML obsah
+  let html = `
+    <div style="margin-bottom: 20px;">
+      <h1 style="font-size: 28px; margin: 10px 0; text-align: center;">ITINERÁŘ</h1>
+      <p style="font-size: 16px; margin: 5px 0;"><strong>Závod:</strong> ${raceData?.race_name || "-"}</p>
+      <p style="font-size: 16px; margin: 5px 0;"><strong>Datum:</strong> ${raceData?.race_date || "-"}</p>
+      <p style="font-size: 16px; margin: 5px 0;"><strong>Místo:</strong> ${raceData?.location || "-"}</p>
+    </div>
+    
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+      <thead>
+        <tr style="background-color: #2980b9; color: white;">
+          <th style="border: 1px solid #bbb; padding: 12px; text-align: left; font-weight: bold; font-size: 14px;">Typ</th>
+          <th style="border: 1px solid #bbb; padding: 12px; text-align: left; font-weight: bold; font-size: 14px;">Popis</th>
+          <th style="border: 1px solid #bbb; padding: 12px; text-align: left; font-weight: bold; font-size: 14px;">Čas</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  
+  stages.forEach((s, index) => {
+    const bgColor = index % 2 === 0 ? "white" : "#f5f5f5";
+    const typeLabel = s.status === "stage" ? "RZ" : s.status === "service" ? "Servis" : "Přejezd";
+    const time = s.start_time ? formatDateTime(s.start_time) : "-";
+    
+    html += `
+      <tr style="background-color: ${bgColor};">
+        <td style="border: 1px solid #bbb; padding: 10px; font-size: 14px; font-weight: bold;">${typeLabel}</td>
+        <td style="border: 1px solid #bbb; padding: 10px; font-size: 14px;">${s.name || "-"}</td>
+        <td style="border: 1px solid #bbb; padding: 10px; font-size: 14px;">${time}</td>
+      </tr>
+    `;
+  });
+  
+  html += `
+      </tbody>
+    </table>
+  `;
+  
+  container.innerHTML = html;
+  document.body.appendChild(container);
+  
+  // Render do canvas a PDF
+  try {
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff"
+    });
+    
+    const { jsPDF } = window.jspdf;
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4"
+    });
+    
+    const imgWidth = 210;
+    const pageHeight = 297;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+    
+    // Přidat obrázky na stránky (pokud je obsah delší)
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+    
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+    
+    pdf.save(`Itinerar_${raceId}.pdf`);
+  } catch (error) {
+    console.error("Chyba při vytváření PDF:", error);
+    alert("Chyba při exportu PDF");
+  } finally {
+    document.body.removeChild(container);
+  }
+}
+
+async function exportKartaZavodnika() {
+  const raceId = getRaceId();
+  
+  if (!raceId || raceId === "00000") {
+    alert("Nejprve nastav ID závodu");
+    return;
+  }
+
+  const { data: riders } = await supabaseClient
+    .from("riders")
+    .select("*")
+    .eq("race_id", raceId)
+    .order("rider_number", { ascending: true });
+
+  if (!riders || riders.length === 0) {
+    alert("Žádní jezdci k exportu");
+    return;
+  }
+
+  let csv = "KARTA ZÁVODNÍKA\n";
+  csv += `\n`;
+
+  riders.forEach(r => {
+    csv += `Startovní číslo,${r.rider_number}\n`;
+    csv += `Jezdec,${r.name}\n`;
+    csv += `Spolujezdec,${r.co_driver}\n`;
+    csv += `Národnost,${r.nationality}\n`;
+    csv += `Značka vozu,${r.car_brand}\n`;
+    csv += `Model vozu,${r.car_model}\n`;
+    csv += `Kategorie,${r.category}\n`;
+    csv += `Tým,${r.team}\n`;
+    csv += `\n`;
+  });
+
+  downloadCSV(csv, `Karta_zavodnika_${raceId}.csv`);
+}
+
+function downloadCSV(csvContent, fileName) {
+  const BOM = "\uFEFF";
+  const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  
+  link.setAttribute("href", url);
+  link.setAttribute("download", fileName);
+  link.style.visibility = "hidden";
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+//---------------
+
 document.addEventListener("DOMContentLoaded", () => {
   initAdminAuth();
 });
