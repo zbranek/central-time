@@ -234,19 +234,25 @@ button.stop,
   width: 100%;
 }
 
+.start-shell {
+  display: grid;
+  gap: 14px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
 .start-display {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 10px;
 }
 
 .metric-card {
-  min-height: 182px;
+  min-height: 128px;
   display: grid;
   align-content: center;
   justify-items: center;
-  padding: 18px;
+  padding: 14px;
   background: var(--surface-strong);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -255,7 +261,7 @@ button.stop,
 .rider-display,
 .countdown {
   font-family: var(--mono);
-  font-size: clamp(4rem, 18vw, 7rem);
+  font-size: clamp(2.8rem, 12vw, 4.4rem);
   font-weight: 900;
   line-height: 1;
 }
@@ -283,14 +289,13 @@ button.stop,
 }
 
 .rider-area {
-  max-width: 560px;
-  margin: 0 auto;
+  max-width: 100%;
 }
 
 .rider-area input {
-  height: 62px;
-  margin-bottom: 14px;
-  font-size: 2rem;
+  height: 56px;
+  margin-bottom: 10px;
+  font-size: 1.7rem;
   font-weight: 900;
   text-align: center;
   letter-spacing: 0.08em;
@@ -298,11 +303,11 @@ button.stop,
 
 .keypad {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .keypad-start {
-  grid-template-columns: repeat(3, minmax(64px, 1fr)) minmax(100px, 1.25fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .modal-keypad {
@@ -310,14 +315,17 @@ button.stop,
 }
 
 .keypad button {
-  min-height: 74px;
+  min-height: 64px;
   padding: 8px;
-  font-size: 1.55rem;
+  font-size: 1.35rem;
   font-weight: 900;
+  border-radius: 10px;
 }
 
 .keypad .key-action {
-  font-size: 1rem;
+  grid-column: span 3;
+  min-height: 52px;
+  font-size: 0.95rem;
   text-transform: uppercase;
 }
 
@@ -475,7 +483,7 @@ button.stop,
   }
 
   .metric-card {
-    min-height: 150px;
+    min-height: 112px;
   }
 }
 
@@ -501,16 +509,37 @@ button.stop,
     padding: 9px 10px;
   }
 
-  .keypad-start {
-    grid-template-columns: repeat(3, minmax(58px, 1fr));
+  .start-display {
+    gap: 8px;
   }
 
-  .keypad-start .key-action {
-    grid-column: span 3;
+  .metric-card {
+    min-height: 96px;
+    padding: 10px;
+  }
+
+  .rider-display,
+  .countdown {
+    font-size: clamp(2.2rem, 11vw, 3rem);
+  }
+
+  .rider-area input {
+    height: 50px;
+    font-size: 1.45rem;
+  }
+
+  .keypad-start {
+    gap: 7px;
   }
 
   .keypad button {
-    min-height: 68px;
+    min-height: 58px;
+    font-size: 1.2rem;
+  }
+
+  .keypad .key-action {
+    min-height: 48px;
+    font-size: 0.9rem;
   }
 
   .stepper-row button {
