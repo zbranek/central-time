@@ -31,42 +31,37 @@
       <section id="view-start" class="view active">
         <h2>Start RZ</h2>
 
-        <div id="start-display-box" class="start-display">
-          <div class="metric-card">
-            <div class="metric-label">Jezdec</div>
-            <div id="active-rider-display" class="rider-display">--</div>
+        <div class="start-shell">
+          <div id="start-display-box" class="start-display">
+            <div class="metric-card">
+              <div class="metric-label">Jezdec</div>
+              <div id="active-rider-display" class="rider-display">--</div>
+            </div>
+
+            <div class="metric-card countdown-card">
+              <div class="metric-label">Start za</div>
+              <div id="countdown" class="countdown">--</div>
+            </div>
           </div>
 
-          <div class="metric-card countdown-card">
-            <div class="metric-label">Start za</div>
-            <div id="countdown" class="countdown">--</div>
-          </div>
-        </div>
+          <div class="rider-area">
+            <label for="riderNumber">Startovní číslo</label>
+            <input type="number" id="riderNumber" readonly placeholder="Číslo jezdce">
 
-        <div class="rider-area">
-          <label for="riderNumber">Startovní číslo</label>
-          <input type="number" id="riderNumber" readonly placeholder="Číslo jezdce">
-
-          <div class="keypad keypad-start">
-            <button onclick="pressNum(1)">1</button>
-            <button onclick="pressNum(2)">2</button>
-            <button onclick="pressNum(3)">3</button>
-            <button class="key-action danger" onclick="clearNum()">Oprava</button>
-
-            <button onclick="pressNum(4)">4</button>
-            <button onclick="pressNum(5)">5</button>
-            <button onclick="pressNum(6)">6</button>
-            <button class="key-action stop" onclick="clearNum()">Stop</button>
-
-            <button onclick="pressNum(7)">7</button>
-            <button onclick="pressNum(8)">8</button>
-            <button onclick="pressNum(9)">9</button>
-            <div></div>
-
-            <div></div>
-            <button onclick="pressNum(0)">0</button>
-            <div></div>
-            <div></div>
+            <div class="keypad keypad-start">
+              <button onclick="pressNum(1)">1</button>
+              <button onclick="pressNum(2)">2</button>
+              <button onclick="pressNum(3)">3</button>
+              <button onclick="pressNum(4)">4</button>
+              <button onclick="pressNum(5)">5</button>
+              <button onclick="pressNum(6)">6</button>
+              <button onclick="pressNum(7)">7</button>
+              <button onclick="pressNum(8)">8</button>
+              <button onclick="pressNum(9)">9</button>
+              <button onclick="pressNum(0)">0</button>
+              <button class="key-action danger" onclick="clearNum()">Oprava</button>
+              <button class="key-action stop" onclick="clearNum()">Stop</button>
+            </div>
           </div>
         </div>
       </section>
