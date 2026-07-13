@@ -344,7 +344,7 @@ async function importCSV() {
 
     if (!line.trim()) return;
 
-    const cols = line.split(",");
+    const cols = line.split(";");
 
     riders.push({
       race_id: window.APP.raceId,
