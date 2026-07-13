@@ -267,6 +267,14 @@ button:not(.tab-btn):active {
   flex: 1 1 260px;
 }
 
+.import-description {
+  flex: 1 1 100%;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  min-width: 240px;
+}
+
 .status-message,
 #riders-status,
 #race-id-status {
