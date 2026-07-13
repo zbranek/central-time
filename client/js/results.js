@@ -61,6 +61,8 @@ function saveRaceIdResults() {
   // 🔥 reload stages
   loadStages();
   loadPublicItinerary();
+  // 🔥 load race title
+  loadRaceTitle();
 
   // 🔥 vyčistit tabulku výsledků
   const tbody = document.querySelector("#results-table tbody");
@@ -83,6 +85,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("race-id-input").value =
       raceId;
   }
+
+  // load race title into header
+  loadRaceTitle();
 
   
 
@@ -265,7 +270,7 @@ function renderTable(tableSelector, results, ridersMap) {
     }
 
     // Car number
-    const carNumHTML = `<span class="car-num">#${r.rider}</span>`;
+    const carNumHTML = `<span class="car-num">${r.rider}</span>`;
 
     // Crew
     const jmenoJezdce = rider.name || "Neznámý";
@@ -320,7 +325,7 @@ function renderTable(tableSelector, results, ridersMap) {
           <div class="gap-bar-container">
             <div class="gap-bar" style="width: ${gapPercent}%"></div>
           </div>
-          ${gapToPrev !== "-" ? `<div style="font-size: 10px; color: #666; margin-top: 2px;">Př: ${gapToPrev}</div>` : ""}
+          ${gapToPrev !== "-" ? `<div style="font-size: 10px; color: #666; margin-top: 2px;">${gapToPrev}</div>` : ""}
         </div>
       `;
     }
@@ -478,5 +483,81 @@ async function loadPublicItinerary() {
 
     tbody.appendChild(tr);
   });
+}
+
+
+// Load race title (name) from Supabase and populate header input
+async function loadRaceTitle() {
+  const el = document.getElementById("race-title-display");
+  if (!el) return;
+
+  const raceId = getRaceId();
+  // localization helper
+  function getLang() {
+    const htmlLang = document.documentElement.getAttribute("lang");
+    if (htmlLang) return htmlLang.split("-")[0];
+    return (navigator.language || navigator.userLanguage || "cs").split("-")[0];
+  }
+
+  function t(key) {
+    const lang = getLang();
+    const dict = {
+      cs: {
+        race_not_found: "Název závodu nenalezen"
+      },
+      en: {
+        race_not_found: "Race name not found"
+      }
+    };
+    return (dict[lang] && dict[lang][key]) || dict.cs[key] || key;
+  }
+
+  if (!raceId) {
+    el.textContent = t("race_not_found");
+    return;
+  }
+
+  // Query the confirmed `races` table using `race_id` -> `race_name`
+  try {
+    const res = await supabaseClient
+      .from("races")
+      .select("race_name,location,race_date")
+      .eq("race_id", raceId)
+      .limit(1);
+
+    if (res && res.error) {
+      console.debug("loadRaceTitle: supabase error for races.race_id:", res.error);
+      el.textContent = t("race_not_found");
+      return;
+    }
+
+    if (res && res.data && res.data.length > 0) {
+      const row = res.data[0];
+      if (row.race_name) el.textContent = row.race_name;
+
+      const locEl = document.getElementById('race-location-display');
+      const dateEl = document.getElementById('race-date-display');
+      if (locEl) locEl.textContent = row.location || "";
+      if (dateEl) {
+        if (row.race_date) {
+          try {
+            const d = new Date(row.race_date);
+            dateEl.textContent = d.toLocaleDateString(getLang(), { day: '2-digit', month: 'short', year: 'numeric' });
+          } catch (e) {
+            dateEl.textContent = row.race_date;
+          }
+        } else {
+          dateEl.textContent = "";
+        }
+      }
+
+      return;
+    }
+  } catch (e) {
+    console.debug("loadRaceTitle: unexpected error querying races", e);
+  }
+
+  console.warn("loadRaceTitle: race name not found for id", raceId);
+  el.textContent = t("race_not_found");
 }
 
