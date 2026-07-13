@@ -1,0 +1,55 @@
+/* Compact overrides for Results: scale down ~70%, add thin row dividers */
+
+.results-container {
+  font-size: 0.7em;
+  padding-top: 12px;
+  padding-bottom: 16px;
+}
+
+.results-table th {
+  padding: 6px 8px !important;
+  font-size: 0.95em !important;
+}
+
+.results-table td {
+  padding: 6px 8px !important;
+  font-size: 0.95em !important;
+}
+
+.results-table tbody tr {
+  border-bottom: 1px solid #e6e6e6 !important;
+}
+
+.pos-block {
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 11px !important;
+}
+
+.car-num {
+  padding: 1px 6px !important;
+  font-size: 11px !important;
+}
+
+/* Remove any remaining gap-bar visuals */
+.gap-bar-container,
+.gap-bar {
+  display: none !important;
+}
+
+/* Slightly reduce section padding */
+.results-panel .section-label {
+  padding: 8px 10px !important;
+}
+
+/* Reduce empty message padding */
+.empty-message {
+  padding: 12px 8px !important;
+  font-size: 0.95em !important;
+}
+
+/* Tweak live badge size */
+.live-badge {
+  padding: 6px 10px !important;
+  font-size: 11px !important;
+}

@@ -1,16 +1,19 @@
 /* F1 TIMING TOWER AESTHETIC - Czech Rally Results */
 
 :root {
-  --bg-dark: #0a0a0a;
-  --bg-panel: #111111;
-  --bg-surface: #1a1a1a;
-  --accent-red: #E10600;
-  --text-white: #ffffff;
-  --text-light: #cccccc;
-  --text-muted: #888888;
-  --text-dark: #555555;
-  --border-color: #1a1a1a;
-  --gap-bar-bg: #1a1a1a;
+  --bg-dark: #f7f7f7;
+  --bg-panel: #ffffff;
+  --bg-surface: #fcfcfc;
+  --bg-elevated: #f3f3f3;
+  --accent-blue: #0369a1; /* renamed to blue to match admin */
+  --accent-blue-strong: #044f78;
+  --text-white: #111111;
+  --text-light: #333333;
+  --text-muted: #666666;
+  --text-dark: #888888;
+  --border-color: #dddddd;
+  --gap-bar-bg: #ececec;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 /* RESET & BASE */
@@ -25,18 +28,19 @@ html {
 }
 
 body {
-  background: var(--bg-dark);
+  min-height: 100vh;
+  background: #ffffff;
   color: var(--text-white);
-  font-family: 'Inter', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
 }
 
 /* TYPOGRAPHY */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 900;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -44,13 +48,18 @@ h1, h2, h3, h4, h5, h6 {
    HEADER — Red background with title, subtitle, and LIVE badge
    ═════════════════════════════════════════════════════════════════════════ */
 
+.results-app {
+  min-height: 100vh;
+}
+
 .app-header {
-  background: var(--accent-red);
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
   padding: 16px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 4px 16px rgba(225, 6, 0, 0.3);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
 }
 
 .header-content {
@@ -58,7 +67,7 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  max-width: 1400px;
+  max-width: 1520px;
   margin: 0 auto;
 }
 
@@ -67,19 +76,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .race-title {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 900;
   letter-spacing: 0.12em;
-  color: var(--text-white);
+  color: #111111;
   margin: 0;
+  line-height: 1;
 }
 
 .race-subtitle {
-  font-size: 13px;
-  letter-spacing: 0.12em;
-  color: rgba(255, 255, 255, 0.8);
-  margin-top: 2px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: #666666;
+  margin-top: 4px;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -98,15 +108,15 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 2px solid var(--text-white);
-  border-radius: 4px;
+  background: #f4f4f4;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
   padding: 8px 12px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-weight: 900;
   font-size: 12px;
   letter-spacing: 0.1em;
-  color: var(--text-white);
+  color: #111111;
   text-transform: uppercase;
 }
 
@@ -114,7 +124,7 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-block;
   width: 8px;
   height: 8px;
-  background: var(--text-white);
+  background: var(--accent-blue);
   border-radius: 50%;
   animation: blink 1.5s infinite;
 }
@@ -124,66 +134,70 @@ h1, h2, h3, h4, h5, h6 {
    ═════════════════════════════════════════════════════════════════════════ */
 
 .results-container {
-  max-width: 1400px;
+  max-width: 1520px;
   margin: 0 auto;
-  padding: 16px 24px;
+  padding: 18px 24px 28px;
 }
 
 /* CONTROL BAR */
 .control-bar {
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 16px;
+  border-radius: 8px;
+  padding: 14px;
   display: grid;
-  grid-template-columns: 1fr auto 200px auto;
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto 220px auto;
+  gap: 10px;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
 }
 
 .input-race-id,
 .select-stage {
-  background: #0a0a0a;
-  border: 1px solid #333333;
-  border-radius: 3px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
   padding: 10px 12px;
-  color: var(--text-white);
-  font-family: 'Barlow Condensed', sans-serif;
+  color: #111111;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-size: 13px;
   font-weight: 600;
 }
 
-.input-race-id::placeholder,
-.select-stage {
+.input-race-id::placeholder {
   color: var(--text-muted);
 }
 
-.input-race-id:focus,
-.select-stage:focus {
+.select-stage {
+  color: #111111;
+}
+
+  input-race-id:focus,
+  select-stage:focus {
   outline: none;
-  border-color: var(--accent-red);
-  box-shadow: 0 0 8px rgba(225, 6, 0, 0.2);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 8px rgba(3, 105, 161, 0.2);
 }
 
 .btn-load {
-  background: var(--accent-red);
-  color: var(--text-white);
+  background: #111111;
+  color: #ffffff;
   border: none;
-  border-radius: 3px;
+  border-radius: 6px;
   padding: 10px 16px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
 }
 
 .btn-load:hover {
-  background: #cc0500;
-  box-shadow: 0 2px 8px rgba(225, 6, 0, 0.3);
+  background: var(--accent-blue);
+  box-shadow: 0 2px 8px rgba(3, 105, 161, 0.16);
 }
 
 .btn-load:active {
@@ -194,24 +208,25 @@ h1, h2, h3, h4, h5, h6 {
 .nav-bar {
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 8px;
   display: flex;
   gap: 0;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   overflow-x: auto;
+  box-shadow: var(--shadow);
 }
 
 .nav-tab {
   flex: 1;
-  padding: 14px 16px;
+  padding: 12px 14px;
   background: transparent;
   border: none;
   border-bottom: 3px solid transparent;
   color: var(--text-muted);
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-weight: 700;
   font-size: 13px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -223,31 +238,40 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .nav-tab.active {
-  color: var(--text-white);
-  border-bottom-color: var(--accent-red);
+  color: #111111;
+  border-bottom-color: var(--accent-blue);
+  background: #f8f8f8;
 }
 
 /* ═════════════════════════════════════════════════════════════════════════
    SECTION PANEL & LABEL
    ═════════════════════════════════════════════════════════════════════════ */
 
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
 .results-panel {
-  background: var(--bg-dark);
+  background: var(--bg-panel);
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
+  box-shadow: var(--shadow);
 }
 
 .section-label {
-  background: var(--bg-panel);
+  background: #f7f7f7;
   border-bottom: 1px solid var(--border-color);
-  padding: 12px 16px;
-  font-family: 'Barlow Condensed', sans-serif;
+  padding: 10px 14px;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--accent-red);
+  color: #111111;
 }
 
 .label-text {
@@ -274,7 +298,8 @@ h1, h2, h3, h4, h5, h6 {
 .results-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Inter', sans-serif;
+  font-family: Verdana, "Trebuchet MS", Arial, Helvetica, sans-serif;
+  font-size: 11px;
 }
 
 .results-table thead {
@@ -285,10 +310,10 @@ h1, h2, h3, h4, h5, h6 {
 .results-table th {
   padding: 10px 12px;
   text-align: left;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-weight: 700;
   font-size: 11px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-light);
   border-right: 1px solid var(--border-color);
@@ -299,26 +324,26 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .results-table tbody tr {
-  border-bottom: 1px solid var(--border-color);
-  transition: background-color 0.15s ease;
+  border-bottom: 1px solid #e6e6e6; /* thin row divider */
+  transition: background-color 0.12s ease;
 }
 
 .results-table tbody tr:hover {
-  background: rgba(225, 6, 0, 0.05);
+  background: #f2f9ff; /* subtle blue tint on hover */
 }
 
 .results-table tbody tr.dnf {
-  background: rgba(225, 6, 0, 0.08);
+  background: rgba(3, 105, 161, 0.06);
 }
 
 .results-table tbody tr.dnf:hover {
-  background: rgba(225, 6, 0, 0.12);
+  background: rgba(3, 105, 161, 0.12);
 }
 
 .results-table td {
-  padding: 12px;
-  color: var(--text-white);
-  border-right: 1px solid #2a2a2a;
+  padding: 10px 12px;
+  color: #111111;
+  border-right: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .results-table td:last-child {
@@ -342,43 +367,44 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 3px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 900;
-  font-size: 16px;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1;
 }
 
 .pos-block.p1 {
-  background: var(--accent-red);
-  color: var(--text-white);
+  background: #111111;
+  color: #ffffff;
   border: none;
 }
 
 .pos-block.p2 {
-  background: #2a2a2a;
-  color: var(--text-white);
-  border: none;
+  background: #f0f0f0;
+  color: #111111;
+  border: 1px solid #d9d9d9;
 }
 
 .pos-block.p3 {
-  background: #1d1d1d;
-  color: var(--text-muted);
-  border: none;
+  background: #fafafa;
+  color: #666666;
+  border: 1px solid #e2e2e2;
 }
 
 .pos-block.p4 {
   background: transparent;
-  color: var(--text-dark);
-  border: 1px solid #222222;
+  color: #888888;
+  border: 1px solid #e2e2e2;
 }
 
 .pos-dnf {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-weight: 900;
   font-size: 14px;
-  color: var(--accent-red);
+  color: #111111; /* DNF text remains black */
 }
 
 /* COLUMN: CAR NUMBER */
@@ -389,13 +415,15 @@ h1, h2, h3, h4, h5, h6 {
 
 .car-num {
   display: inline-block;
-  background: #1c1c1c;
-  color: var(--text-white);
-  border-radius: 3px;
+  background: #f4f4f4;
+  color: #111111;
+  border: none; /* removed border around car number */
+  border-radius: 4px;
   padding: 2px 7px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 900;
-  font-size: 14px;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1.2;
 }
 
 /* COLUMN: CREW */
@@ -404,18 +432,18 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .crew-name {
-  font-family: 'Inter', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-weight: 600;
-  font-size: 14px;
-  color: var(--text-white);
+  font-size: 13px;
+  color: #111111;
   margin: 0;
 }
 
 .crew-car {
-  font-family: 'Inter', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-weight: 400;
   font-size: 11px;
-  color: var(--text-dark);
+  color: #777777;
   margin-top: 2px;
 }
 
@@ -427,14 +455,14 @@ h1, h2, h3, h4, h5, h6 {
 
 .group-badge {
   display: inline-block;
-  background: #1a0000;
-  border: 1px solid #3a0000;
-  border-radius: 3px;
+  background: rgba(3, 105, 161, 0.06);
+  border: 1px solid rgba(3, 105, 161, 0.18);
+  border-radius: 4px;
   padding: 3px 8px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-weight: 700;
   font-size: 11px;
-  color: var(--accent-red);
+  color: var(--accent-blue);
 }
 
 /* COLUMN: TIME */
@@ -443,24 +471,24 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .time-main {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 14px;
   letter-spacing: 0.03em;
-  color: var(--text-white);
+  color: #111111;
 }
 
 .time-sub {
-  font-family: 'Inter', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-size: 11px;
-  color: #444444;
+  color: #777777;
   margin-top: 2px;
 }
 
 .time-penalty {
-  font-family: 'Inter', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-size: 11px;
-  color: var(--accent-red);
+  color: var(--accent-blue);
   font-weight: 600;
   margin-top: 2px;
 }
@@ -473,33 +501,37 @@ h1, h2, h3, h4, h5, h6 {
 .gap-container {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .gap-value {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-weight: 600;
   font-size: 13px;
-  color: var(--text-muted);
+  color: #666666;
 }
 
 .gap-value.leader {
-  color: #a855f7;
+  color: #111111;
 }
 
-.gap-bar-container {
-  width: 100%;
-  height: 3px;
-  background: var(--gap-bar-bg);
-  border-radius: 2px;
-  overflow: hidden;
+/* === Compact column font sizing: make crew/group/time columns 70% and uniform === */
+.results-table .col-crew,
+.results-table .col-group,
+.results-table .col-time {
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
+  font-size: 9px; /* ~70% of typical 13px baseline */
+  line-height: 1.1;
 }
 
-.gap-bar {
-  height: 100%;
-  background: var(--accent-red);
-  border-radius: 2px;
-  transition: width 0.3s ease;
+.results-table .col-crew .crew-name,
+.results-table .col-crew .crew-car,
+.results-table .col-group .group-badge,
+.results-table .col-time .time-main,
+.results-table .col-time .time-sub,
+.results-table .col-time .time-penalty {
+  font-size: inherit;
+  line-height: inherit;
 }
 
 /* ═════════════════════════════════════════════════════════════════════════
@@ -519,7 +551,7 @@ h1, h2, h3, h4, h5, h6 {
 .itinerary-table th {
   padding: 10px 12px;
   text-align: left;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-weight: 700;
   font-size: 11px;
   letter-spacing: 0.08em;
@@ -536,8 +568,8 @@ h1, h2, h3, h4, h5, h6 {
   border-bottom: 1px solid var(--border-color);
 }
 
-.itinerary-table tbody tr:hover {
-  background: rgba(225, 6, 0, 0.05);
+  .itinerary-table tbody tr:hover {
+  background: rgba(3, 105, 161, 0.05);
 }
 
 .itinerary-table td {
@@ -556,11 +588,11 @@ h1, h2, h3, h4, h5, h6 {
 
 .stage-badge {
   display: inline-block;
-  background: var(--accent-red);
+  background: var(--accent-blue);
   color: var(--text-white);
   border-radius: 3px;
   padding: 3px 8px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-weight: 900;
   font-size: 12px;
 }
@@ -574,7 +606,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 160px;
   text-align: right;
   color: var(--text-light);
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-weight: 600;
   font-size: 13px;
 }
@@ -588,7 +620,7 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-block;
   border-radius: 3px;
   padding: 4px 10px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
   font-weight: 700;
   font-size: 11px;
   text-transform: uppercase;
@@ -602,9 +634,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .status-active {
-  background: rgba(225, 6, 0, 0.2);
-  color: var(--accent-red);
-  border: 1px solid var(--accent-red);
+  background: rgba(3, 105, 161, 0.2);
+  color: var(--accent-blue);
+  border: 1px solid var(--accent-blue);
   animation: blink 1.5s infinite;
 }
 
@@ -622,6 +654,10 @@ h1, h2, h3, h4, h5, h6 {
   .control-bar {
     grid-template-columns: 1fr auto;
     gap: 10px;
+  }
+
+  .results-grid {
+    grid-template-columns: 1fr;
   }
 
   .input-race-id,
@@ -716,6 +752,10 @@ h1, h2, h3, h4, h5, h6 {
   .results-table,
   .itinerary-table {
     font-size: 12px;
+  }
+
+  .control-bar {
+    padding: 10px;
   }
 
   .results-table th,

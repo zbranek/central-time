@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
   <meta charset="UTF-8">
-  <title>Rally Results - F1 Timing</title>
+  <title>Results - Timing</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="./CSS/results.css">
+  <link rel="stylesheet" href="./CSS/results-compact.css">
 </head>
 
 <body>
@@ -18,8 +19,12 @@
     <header class="app-header">
       <div class="header-content">
         <div class="header-left">
-          <h1 class="race-title" id="race-title-main">RALLY RESULTS</h1>
-          <div class="race-subtitle">Czech Rally Championship 2026</div>
+          <h1 class="race-title" id="race-title-main">RESULTS</h1>
+          <div id="race-title-display" class="race-subtitle">&nbsp;</div>
+          <div class="race-meta">
+            <span id="race-location-display" class="race-location">&nbsp;</span>
+            <span id="race-date-display" class="race-date">&nbsp;</span>
+          </div>
         </div>
         <div class="live-badge">
           <span class="live-dot"></span>
