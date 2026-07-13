@@ -339,16 +339,53 @@ async function importCSV() {
 
   const riders = [];
 
-  // první řádek = hlavička
-  lines.slice(1).forEach(line => {
+  // CSV začíná rovnou prvním jezdcem
+  function parseCSVLine(line, sep = ",") {
+    const res = [];
+    let cur = "";
+    let inQuotes = false;
 
-    if (!line.trim()) return;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
 
-    const cols = line.split(";");
+      if (ch === '"') {
+        // support escaped double quotes ""
+        if (inQuotes && line[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+        continue;
+      }
+
+      if (ch === sep && !inQuotes) {
+        res.push(cur);
+        cur = "";
+        continue;
+      }
+
+      cur += ch;
+    }
+
+    res.push(cur);
+    return res;
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    if (!line) continue;
+    // normalize CRLF and trim
+    line = line.replace(/\r/g, '').trim();
+    if (!line) continue;
+
+    const cols = parseCSVLine(line, ',').map(c => c.replace(/^\"|\"$/g, '').trim());
+
+    // basic validation: need at least rider number and name
+    if (!cols[0] || !cols[1]) continue;
 
     riders.push({
       race_id: window.APP.raceId,
-
       rider_number: cols[0]?.trim(),
       name: cols[1]?.trim(),
       nationality: cols[2]?.trim(),
@@ -358,7 +395,7 @@ async function importCSV() {
       category: cols[6]?.trim(),
       team: cols[7]?.trim()
     });
-  });
+  }
 
   const { error } = await window.supabaseClient
     .from("riders")
